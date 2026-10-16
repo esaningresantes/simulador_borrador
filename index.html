@@ -50,50 +50,57 @@
       border:1px solid var(--esan-border);
     }
 
-    .sidebar-red{ background:var(--esan-red); }
+.sidebar-red {
+  background: var(--esan-red);
+}
 
-    .menu-btn{
-      width:100%;
-      display:flex;
-      align-items:center;
-      gap:.75rem;
-      padding:.85rem 1rem;
-      color:#fff;
-      text-align:left;
-      transition:.2s ease;
-      border-left:4px solid transparent;
-    }
+.menu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  transition: background .2s ease;
+  border-left: 4px solid transparent;
+}
 
-    .menu-btn:hover{ background:rgba(255,255,255,.12); }
+.menu-btn:hover {
+  background: rgba(255, 255, 255, .12);
+}
 
-    .menu-btn.active-tab{
-      background:var(--esan-red-dark);
-      font-weight:700;
-      border-left-color:#fff;
-    }
+.menu-btn.active-tab {
+  background: var(--esan-red-dark);
+  font-weight: 700;
+  border-left-color: #fff;
+}
 
-    .menu-btn.disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
+.menu-btn.disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
 
-    .menu-sub-btn {
+.menu-sub-btn {
   width: 100%;
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
   column-gap: 10px;
   padding: 10px 14px 10px 18px;
-  color: rgba(255,255,255,.92);
+  color: rgba(255, 255, 255, .95);
   text-align: left;
-  font-size: 12px;
+  font-size: 12.5px;
   line-height: 1.4;
   border-left: 4px solid transparent;
   transition: background .2s ease;
 }
 
 .menu-sub-btn:hover {
-  background: rgba(255,255,255,.12);
+  background: rgba(255, 255, 255, .12);
 }
 
 .menu-sub-btn.active-tab {
@@ -104,9 +111,9 @@
 }
 
 .menu-sub-btn i {
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  margin-top: 0;
 }
     .menu-toggle-btn{justify-content:space-between;}
 
@@ -499,11 +506,11 @@
        onclick="toggleMenu(false)"></div>
 
   <!-- SIDEBAR -->
-  <aside id="sidebar"
-         class="fixed md:sticky inset-y-0 md:top-0 md:bottom-auto left-0
+ <aside id="sidebar"
+       class="fixed md:sticky inset-y-0 md:top-0 md:bottom-auto left-0
        z-50 w-72 md:h-screen sidebar-red flex flex-col
        transform -translate-x-full md:translate-x-0
-       transition-transform duration-300 shadow-2xl md:shadow-none"
+       transition-transform duration-300 shadow-2xl md:shadow-none">
     
       <div class="px-5 py-5 border-b border-white/20 flex flex-row items-center gap-3 cursor-pointer"
            onclick="renderContent('home')">
