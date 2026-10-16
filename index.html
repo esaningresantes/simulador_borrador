@@ -77,27 +77,37 @@
       cursor:not-allowed;
     }
 
-    .menu-sub-btn{
-      width:100%;
-      display:flex;
-      align-items:flex-start;
-      gap:.6rem;
-      padding:.58rem .8rem .58rem 1.35rem;
-      color:rgba(255,255,255,.9);
-      text-align:left;
-      font-size:.72rem;
-      line-height:1.35;
-      border-left:4px solid transparent;
-      transition:background .2s ease;
-    }
-    .menu-sub-btn:hover{background:rgba(255,255,255,.12);}
-    .menu-sub-btn.active-tab{
-      background:var(--esan-red-dark);
-      color:#fff;
-      font-weight:700;
-      border-left-color:#fff;
-    }
-    .menu-sub-btn span{flex:1;}
+    .menu-sub-btn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 10px;
+  padding: 10px 14px 10px 18px;
+  color: rgba(255,255,255,.92);
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.4;
+  border-left: 4px solid transparent;
+  transition: background .2s ease;
+}
+
+.menu-sub-btn:hover {
+  background: rgba(255,255,255,.12);
+}
+
+.menu-sub-btn.active-tab {
+  background: var(--esan-red-dark);
+  color: #fff;
+  font-weight: 700;
+  border-left-color: #fff;
+}
+
+.menu-sub-btn i {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
     .menu-toggle-btn{justify-content:space-between;}
 
     .field-label{
@@ -238,36 +248,135 @@
 
 <body class="min-h-screen flex flex-col md:flex-row bg-white overflow-x-hidden" id="app">
 
-  <!-- ACCESO INICIAL: PROTOTIPO VISUAL; LA AUTENTICACIÓN REAL DEBE VALIDARSE EN EL BACKEND -->
-  <section id="loginGate" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-gray-900 bg-cover bg-center" style="background-image:linear-gradient(110deg,rgba(17,24,39,.82),rgba(17,24,39,.36)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')">
-    <div class="w-full max-w-5xl grid md:grid-cols-2 overflow-hidden rounded-3xl shadow-2xl border border-white/20 bg-white">
-      <div id="loginDesktopPanel" class="hidden md:flex flex-col justify-between p-10 text-white bg-cover bg-center min-h-[570px]" style="background-image:linear-gradient(180deg,rgba(17,24,39,.10),rgba(17,24,39,.82)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')">
-        <div class="inline-flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-white text-[var(--esan-red)] flex items-center justify-center font-extrabold text-xl">UE</div>
-          <div><p class="font-extrabold tracking-wide">UNIVERSIDAD ESAN</p><p class="text-xs text-white/80">Servicios académicos</p></div>
-        </div>
+  <!-- ACCESO INICIAL: LA AUTENTICACIÓN REAL DEBE VALIDARSE EN EL BACKEND -->
+<section id="loginGate" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-gray-900 bg-cover bg-center" style="background-image:linear-gradient(110deg,rgba(17,24,39,.82),rgba(17,24,39,.36)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')">
+
+  <div class="w-full max-w-5xl grid md:grid-cols-2 overflow-hidden rounded-3xl shadow-2xl border border-white/20 bg-white">
+
+    <!-- PANEL INFORMATIVO -->
+    <div id="loginDesktopPanel" class="hidden md:flex flex-col justify-between p-10 text-white bg-cover bg-center min-h-[570px]" style="background-image:linear-gradient(180deg,rgba(17,24,39,.10),rgba(17,24,39,.82)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')">
+
+      <div class="inline-flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white text-[var(--esan-red)] flex items-center justify-center font-extrabold text-xl">UE</div>
         <div>
-          <p class="uppercase tracking-[.24em] text-xs font-bold text-white/80">Plataforma de orientación</p>
-          <h1 class="text-4xl font-extrabold leading-tight mt-3">Simulador de<br>Trámites Académicos</h1>
-          <p class="mt-4 text-sm text-white/85 leading-relaxed">Accede a la información de los trámites académicos de pregrado.</p>
+          <p class="font-extrabold tracking-wide">UNIVERSIDAD ESAN</p>
+          <p class="text-xs text-white/80">Servicios académicos</p>
         </div>
       </div>
-      <div class="p-7 sm:p-10 flex flex-col justify-center">
-        <div id="loginMobilePhoto" class="md:hidden mb-6 h-36 rounded-2xl bg-cover bg-center" style="background-image:linear-gradient(0deg,rgba(17,24,39,.25),rgba(17,24,39,.05)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')"></div>
-        <div class="w-12 h-12 rounded-xl bg-red-50 text-[var(--esan-red)] flex items-center justify-center mb-5"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
-        <p class="text-xs uppercase tracking-[.2em] font-bold text-[var(--esan-red)]">Bienvenido(a)</p>
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">Inicia sesión</h2>
-        <p class="text-sm text-gray-500 mt-2 leading-relaxed">Ingresa tu código de alumno y DNI para continuar.</p>
-        <form class="mt-6 space-y-4" onsubmit="event.preventDefault(); validarAccesoVistaPrevia();" novalidate>
-          <div><label class="field-label" for="loginCodigo">Código de alumno</label><input id="loginCodigo" class="field" type="text" inputmode="numeric" maxlength="8" placeholder="Código de 8 dígitos" autocomplete="off"><p id="loginCodigoError" class="error-text hidden"></p></div>
-          <div><label class="field-label" for="loginDni">DNI</label><input id="loginDni" class="field" type="password" inputmode="numeric" maxlength="8" placeholder="DNI de 8 dígitos" autocomplete="off"><p id="loginDniError" class="error-text hidden"></p></div>
-          <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900"><strong>Modo de vista previa:</strong> por ahora solo se comprueba el formato de los datos. La identidad todavía no se valida contra el padrón institucional. No publicar para uso real hasta completar la autenticación en el backend.</div>
-          <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-6 py-3.5 text-white font-bold shadow-lg"><i data-lucide="log-in" class="w-5 h-5"></i>Entrar a la vista previa</button>
-        </form>
-        <p class="text-[11px] text-gray-400 mt-5 leading-relaxed">No compartas tus credenciales. Esta pantalla aún no constituye un inicio de sesión seguro.</p>
+
+      <div>
+        <p class="uppercase tracking-[.24em] text-xs font-bold text-white/80">Plataforma de orientación</p>
+        <h1 class="text-4xl font-extrabold leading-tight mt-3">Simulador de<br>Trámites Académicos</h1>
+        <p class="mt-4 text-sm text-white/85 leading-relaxed">
+          Accede a la información de los trámites académicos de pregrado.
+        </p>
       </div>
     </div>
-  </section>
+
+    <!-- PANEL DE INICIO DE SESIÓN -->
+    <div class="p-7 sm:p-10 flex flex-col justify-center">
+
+      <div id="loginMobilePhoto" class="md:hidden mb-6 h-36 rounded-2xl bg-cover bg-center" style="background-image:linear-gradient(0deg,rgba(17,24,39,.25),rgba(17,24,39,.05)),url('ESAN_IMAGE_RUNTIME_PLACEHOLDER')"></div>
+
+      <div class="w-12 h-12 rounded-xl bg-red-50 text-[var(--esan-red)] flex items-center justify-center mb-5">
+        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+      </div>
+
+      <p class="text-xs uppercase tracking-[.2em] font-bold text-[var(--esan-red)]">Bienvenido(a)</p>
+
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">
+        Inicia sesión
+      </h2>
+
+      <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+        Ingresa tu código de alumno y tu contraseña para continuar.
+      </p>
+
+      <!-- FORMULARIO DE ACCESO -->
+      <form class="mt-6 space-y-4" onsubmit="event.preventDefault(); validarAccesoVistaPrevia();" novalidate>
+
+        <div>
+          <label class="field-label" for="loginCodigo">Código de alumno</label>
+          <input
+            id="loginCodigo"
+            class="field"
+            type="text"
+            inputmode="numeric"
+            maxlength="8"
+            placeholder="Código de 8 dígitos"
+            autocomplete="username"
+            required
+          >
+          <p id="loginCodigoError" class="error-text hidden"></p>
+        </div>
+
+        <div>
+          <label class="field-label" for="loginPassword">Contraseña</label>
+          <input
+            id="loginPassword"
+            class="field"
+            type="password"
+            placeholder="Ingresa tu contraseña"
+            autocomplete="current-password"
+            required
+          >
+          <p id="loginPasswordError" class="error-text hidden"></p>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-6 py-3.5 text-white font-bold shadow-lg"
+        >
+          <i data-lucide="log-in" class="w-5 h-5"></i>
+          Ingresar al portal
+        </button>
+      </form>
+
+      <p class="text-[11px] text-gray-400 mt-5 leading-relaxed">
+        Por tu seguridad, no compartas tus credenciales de acceso con otras personas.
+      </p>
+
+      <!-- SOPORTE DE SERVICIOS ACADÉMICOS -->
+      <div class="mt-6 rounded-2xl border border-red-100 bg-red-50/70 p-4">
+        <div class="flex items-start gap-3">
+
+          <div class="w-10 h-10 shrink-0 rounded-xl bg-white text-[var(--esan-red)] flex items-center justify-center shadow-sm">
+            <i data-lucide="headset" class="w-5 h-5"></i>
+          </div>
+
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-gray-900">
+              ¿Necesitas soporte?
+            </h3>
+
+            <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+              Si tienes consultas o necesitas ayuda, comunícate con Servicios Académicos.
+            </p>
+
+            <a
+              href="mailto:ssacad@ue.edu.pe"
+              class="inline-flex items-center gap-2 mt-3 text-sm font-bold text-[var(--esan-red)] hover:underline break-all"
+            >
+              <i data-lucide="mail" class="w-4 h-4 shrink-0"></i>
+              ssacad@ue.edu.pe
+            </a>
+
+            <div class="flex items-start gap-2 mt-3 text-xs text-gray-500">
+              <i data-lucide="clock" class="w-4 h-4 shrink-0 mt-0.5"></i>
+              <p>
+                <span class="font-semibold text-gray-700">Horario de atención:</span>
+                lunes a viernes, de 8:00 a. m. a 5:00 p. m.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- FIN SOPORTE -->
+
+    </div>
+  </div>
+</section>
 
 
   <!-- FONDO OSCURO DEL MENÚ MÓVIL -->
@@ -277,20 +386,30 @@
 
   <!-- SIDEBAR -->
   <aside id="sidebar"
-         class="fixed md:relative inset-y-0 left-0 z-50 w-72 sidebar-red flex flex-col
-                transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
-
-    <div class="p-6 border-b border-white/20 flex items-center gap-3 cursor-pointer" onclick="renderContent('home')">
-      <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-xl font-extrabold text-[var(--esan-red)]">
-        UE
+         class="fixed md:sticky inset-y-0 md:top-0 md:bottom-auto left-0
+       z-50 w-72 md:h-screen sidebar-red flex flex-col
+       transform -translate-x-full md:translate-x-0
+       transition-transform duration-300 shadow-2xl md:shadow-none"
+    
+      <div class="px-5 py-5 border-b border-white/20 flex flex-row items-center gap-3 cursor-pointer"
+           onclick="renderContent('home')">
+      
+        <div class="w-11 h-11 shrink-0 bg-white rounded-xl flex items-center justify-center text-xl font-extrabold text-[var(--esan-red)]">
+          UE
+        </div>
+      
+        <div class="min-w-0 flex-1">
+          <h1 class="text-white text-sm leading-tight font-extrabold whitespace-nowrap">
+            ESAN UNIVERSITY
+          </h1>
+          <p class="text-[10px] text-white/80 uppercase tracking-wider mt-1">
+            Trámites académicos
+          </p>
+        </div>
+      
       </div>
-      <div>
-        <h1 class="text-white text-base leading-tight font-extrabold">ESAN UNIVERSITY</h1>
-        <p class="text-[10px] text-white/80 uppercase tracking-widest mt-1">Trámites académicos</p>
-      </div>
-    </div>
 
-    <div class="flex-1 overflow-y-auto py-3" id="menu-container"></div>
+    <div class="flex-1 min-h-0 overflow-y-auto py-3" id="menu-container"></div>
 
     <div class="p-4 text-center text-[11px] text-white/75 border-t border-white/20 leading-relaxed">
       Herramienta de orientación académica
@@ -979,26 +1098,43 @@ function atributoCodigoSesion(){
    ============================================================ */
 function validarAccesoVistaPrevia(){
   const codigo = document.getElementById("loginCodigo");
-  const dni = document.getElementById("loginDni");
+  const password = document.getElementById("loginPassword");
   const errorCodigo = document.getElementById("loginCodigoError");
-  const errorDni = document.getElementById("loginDniError");
+  const errorPassword = document.getElementById("loginPasswordError");
+
   let valido = true;
-  errorCodigo.classList.add("hidden"); errorDni.classList.add("hidden");
-  codigo.classList.remove("field-error"); dni.classList.remove("field-error");
+
+  errorCodigo.classList.add("hidden");
+  errorPassword.classList.add("hidden");
+
+  codigo.classList.remove("field-error");
+  password.classList.remove("field-error");
+
   if(!/^\d{8}$/.test(codigo.value.trim())){
-    errorCodigo.textContent = "Ingresa un código de alumno de exactamente 8 dígitos.";
-    errorCodigo.classList.remove("hidden"); codigo.classList.add("field-error"); valido = false;
+    errorCodigo.textContent =
+      "Ingresa un código de alumno de exactamente 8 dígitos.";
+    errorCodigo.classList.remove("hidden");
+    codigo.classList.add("field-error");
+    valido = false;
   }
-  if(!/^\d{8}$/.test(dni.value.trim())){
-    errorDni.textContent = "Ingresa un DNI de exactamente 8 dígitos.";
-    errorDni.classList.remove("hidden"); dni.classList.add("field-error"); valido = false;
+
+  if(!password.value.trim()){
+    errorPassword.textContent =
+      "Ingresa tu contraseña.";
+    errorPassword.classList.remove("hidden");
+    password.classList.add("field-error");
+    valido = false;
   }
+
   if(!valido) return;
-  // VISTA PREVIA: por ahora solo valida el formato de ambos campos.
-  // La identidad debe verificarse en Apps Script contra una fuente autorizada.
-  // El código ingresado se conserva en la sesión de la página y se autocompleta en los formularios.
+
+  // VISTA PREVIA: solo valida el formato del código
+  // y que se haya ingresado una contraseña.
+  // Todavía no verifica las credenciales contra el backend.
   document.getElementById("loginGate").classList.add("hidden");
-  document.getElementById("app").dataset.previewCode = codigo.value.trim();
+  document.getElementById("app").dataset.previewCode =
+    codigo.value.trim();
+
   renderContent("home");
 }
 
@@ -1284,7 +1420,52 @@ function validarDocumentosRetiroDefinitivo(){
 /* ============================================================
    MENÚ Y NAVEGACIÓN
    ============================================================ */
-let listaTramitesSidebarAbierta = false;
+db.soporte = {
+  title: "Soporte",
+  icon: "headset",
+  menu: "Soporte",
+  html: `
+    <div class="max-w-3xl mx-auto animate-[fadeIn_0.4s]">
+      <section class="bg-white rounded-3xl border border-gray-200 shadow-sm p-7 sm:p-10">
+
+        <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+          <i data-lucide="headset" class="w-7 h-7 text-[var(--esan-red)]"></i>
+        </div>
+
+        <h2 class="text-3xl font-extrabold text-gray-900 mt-5">
+          ¿Necesitas soporte?
+        </h2>
+
+        <p class="text-gray-600 mt-3 leading-relaxed">
+          Si tienes consultas o inconvenientes con el Simulador de Trámites
+          Académicos, puedes comunicarte con Servicios Académicos.
+        </p>
+
+        <div class="mt-6 rounded-2xl border border-gray-200 p-5">
+          <p class="text-sm font-bold text-gray-900">Correo de contacto</p>
+
+          <a
+            href="mailto:ssacad@ue.edu.pe"
+            class="inline-flex items-center gap-2 mt-2 text-[var(--esan-red)] font-semibold underline"
+          >
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            ssacad@ue.edu.pe
+          </a>
+
+          <p class="text-sm font-bold text-gray-900 mt-6">
+            Horario de atención
+          </p>
+
+          <p class="text-sm text-gray-600 mt-2">
+            Lunes a viernes, de 8:00 a. m. a 5:00 p. m.
+          </p>
+        </div>
+
+      </section>
+    </div>
+  `
+};
+  let listaTramitesSidebarAbierta = false;
 
 /* ============================================================
    NAVEGACIÓN — menú lateral, pestañas y apertura de pantallas
@@ -1293,33 +1474,51 @@ function buildMenu(){
   const container = document.getElementById("menu-container");
 
   container.innerHTML = `
-    <div class="px-4 pb-2 pt-1 text-[10px] uppercase tracking-[.2em] text-white/65 font-bold">Navegación</div>
-    <button id="menu-home" class="menu-btn active-tab" onclick="renderContent('home')">
+    <div class="px-4 pb-2 pt-1 text-[10px] uppercase tracking-[.2em] text-white/65 font-bold">
+      Navegación
+    </div>
+
+    <button id="menu-home" class="menu-btn" onclick="renderContent('home')">
       <i data-lucide="house" class="w-5 h-5 shrink-0"></i>
-      <span class="text-sm">Iniciar</span>
+      <span class="text-sm">Inicio</span>
     </button>
 
-    <div class="mt-2">
-      <button id="menu-toggle-tramites" type="button" class="menu-btn menu-toggle-btn" aria-expanded="false" aria-controls="sidebar-lista-tramites" onclick="toggleListaTramitesSidebar()">
-        <span class="flex items-center gap-3">
-          <i data-lucide="list-check" class="w-5 h-5 shrink-0"></i>
-          <span class="text-sm">Todos los trámites</span>
-        </span>
-        <i id="icono-toggle-tramites" data-lucide="chevron-down" class="w-4 h-4 shrink-0"></i>
+    <div class="px-4 pb-2 pt-5 text-[10px] uppercase tracking-[.2em] text-white/65 font-bold">
+      Trámites
+    </div>
+
+    ${TRAMITES_DISPONIBLES.map(t => {
+      const estado = obtenerEstadoTramite(t.key);
+
+      if(!estado.mostrar) return "";
+
+      return `
+        <button
+          type="button"
+          class="menu-sub-btn ${estado.disponible ? '' : 'opacity-50 cursor-not-allowed'}"
+          data-menu-tramite="${t.key}"
+          onclick="abrirTramite('${t.key}')"
+          title="${estado.disponible ? t.nombre : estado.mensaje}"
+          ${estado.disponible ? "" : 'disabled aria-disabled="true"'}
+        >
+          <i data-lucide="${t.icono}" class="w-4 h-4 shrink-0 mt-0.5"></i>
+          <span>${t.nombre}${estado.disponible ? '' : ' · No disponible'}</span>
+        </button>
+      `;
+    }).join("")}
+
+    <div class="mt-3 pt-3 border-t border-white/20">
+      <button
+        id="menu-soporte"
+        class="menu-btn"
+        onclick="renderContent('soporte')"
+      >
+        <i data-lucide="headset" class="w-5 h-5 shrink-0"></i>
+        <span class="text-sm">Soporte</span>
       </button>
-      <div id="sidebar-lista-tramites" class="${listaTramitesSidebarAbierta ? '' : 'hidden'} mt-1 mb-2">
-        ${TRAMITES_DISPONIBLES.map(t => {
-          const estado = obtenerEstadoTramite(t.key);
-          if(!estado.mostrar) return "";
-          return `
-          <button type="button" class="menu-sub-btn ${estado.disponible ? '' : 'opacity-50 cursor-not-allowed'}" data-menu-tramite="${t.key}" onclick="abrirTramite('${t.key}')" title="${estado.disponible ? t.nombre : estado.mensaje}" ${estado.disponible ? "" : 'disabled aria-disabled="true"'}>
-            <i data-lucide="${t.icono}" class="w-4 h-4 shrink-0 mt-0.5"></i>
-            <span>${t.nombre}${estado.disponible ? '' : ' · No disponible'}</span>
-          </button>`;
-        }).join("")}
-      </div>
     </div>
   `;
+
   lucide.createIcons();
 }
 
@@ -2580,10 +2779,10 @@ document.addEventListener("change", event => {
 renderContent("home");
 lucide.createIcons();
 
-const loginCodigoInput=document.getElementById("loginCodigo");
-const loginDniInput=document.getElementById("loginDni");
-[loginCodigoInput,loginDniInput].forEach(el=>el?.addEventListener("input",()=>{el.value=el.value.replace(/\D/g,"").slice(0,8);}));
-
+const loginCodigoInput = document.getElementById("loginCodigo");
+loginCodigoInput?.addEventListener("input", () => {
+  loginCodigoInput.value = loginCodigoInput.value.replace(/\D/g, "").slice(0, 8);
+});
 </script>
 
 </body>
