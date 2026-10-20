@@ -25,11 +25,41 @@
 
     html{ scroll-behavior:smooth; }
 
+    html, body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+    }
+
     body{
       margin:0;
       background:#fff;
       color:var(--esan-gray-dark);
       font-family:'Montserrat',sans-serif;
+    }
+
+    #app, main, #viewer{
+      min-width:0;
+      max-width:100%;
+    }
+
+    /* El menú se adapta al ancho real de la pantalla sin desbordarse. */
+    #sidebar{
+      width:min(20rem, 88vw);
+      max-width:100vw;
+      overflow-x:hidden;
+    }
+
+    #sidebar .sidebar-brand-title{
+      font-size:1rem;
+      line-height:1.2;
+      white-space:normal;
+      overflow-wrap:anywhere;
+    }
+
+    #sidebar .sidebar-brand-subtitle{
+      font-size:.75rem;
+      line-height:1.35;
     }
 
     h1,h2,h3,h4,.font-serif{
@@ -62,8 +92,8 @@
   padding: 12px 16px;
   color: #fff;
   text-align: left;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
   font-weight: 500;
   transition: background .2s ease;
   border-left: 4px solid transparent;
@@ -93,8 +123,8 @@
   padding: 10px 14px 10px 18px;
   color: rgba(255, 255, 255, .95);
   text-align: left;
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
   border-left: 4px solid transparent;
   transition: background .2s ease;
 }
@@ -145,6 +175,12 @@
       border-color:#DC2626 !important;
       box-shadow:0 0 0 3px rgba(220,38,38,.08) !important;
     }
+
+    /* Estilo uniforme para todos los adjuntos: la selección y carga se realiza solo en PDF. */
+    input[type="file"].field{display:block;width:100%;min-height:56px;padding:12px 14px;border:1px solid #cbd5e1;border-radius:16px;background:#fff;color:#1f2937;}
+    input[type="file"].field::file-selector-button{margin-right:10px;padding:7px 10px;border:1px solid #9ca3af;border-radius:4px;background:#f3f4f6;color:#111827;cursor:pointer;}
+    .format-upload-card{background:#fff;}
+    div:has(> input[type="file"].field):not(.format-upload-card){border:1px solid #e5e7eb;border-radius:12px;padding:16px;background:#fff;}
 
     .helper{
       margin-top:.45rem;
@@ -206,7 +242,8 @@
       gap:.35rem;
       padding:.35rem .7rem;
       border-radius:999px;
-      font-size:.7rem;
+      font-size:.75rem;
+      line-height:1.35;
       font-weight:700;
       letter-spacing:.02em;
     }
@@ -245,10 +282,31 @@
     ::-webkit-scrollbar-thumb{ background:#D1D5DB; border-radius:4px; }
 
     @media(max-width:768px){
-      h1{ font-size:1.8rem !important; }
-      h2{ font-size:1.5rem !important; }
-      h3{ font-size:1.08rem !important; }
+      /* Ajustar solo los encabezados del contenido, no el logotipo del menú. */
+      #viewer h1{ font-size:clamp(1.5rem, 4.8vw, 2rem) !important; }
+      #viewer h2{ font-size:clamp(1.4rem, 4.5vw, 1.9rem) !important; }
+      #viewer h3{ font-size:clamp(1.15rem, 3.6vw, 1.45rem) !important; }
       .glass{ padding:1rem !important; }
+      .portal-card{ padding:1.15rem; }
+      .portal-card p{ font-size:.9rem; }
+      .status-pill{ font-size:.75rem; }
+    }
+
+    /* Escritorio: mantener el menú lateral visible y reservarle su espacio. */
+    @media (min-width: 1024px){
+      #sidebar{
+        width:18rem;
+        max-width:18rem;
+        transform:translateX(0) !important;
+      }
+      #app > main{
+        width:calc(100% - 18rem);
+        max-width:calc(100% - 18rem);
+        margin-left:18rem;
+        flex:0 0 calc(100% - 18rem);
+      }
+      #sidebarMenuButton{ display:none !important; }
+      #mobileBackdrop{ display:none !important; }
     }
   </style>
 </head>
@@ -502,15 +560,13 @@
 
   <!-- FONDO OSCURO DEL MENÚ MÓVIL -->
   <div id="mobileBackdrop"
-       class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
+       class="fixed inset-0 bg-black/40 z-40 hidden"
        onclick="toggleMenu(false)"></div>
 
   <!-- SIDEBAR -->
  <aside id="sidebar"
-       class="fixed md:sticky inset-y-0 md:top-0 md:bottom-auto left-0
-       z-50 w-72 md:h-screen sidebar-red flex flex-col
-       transform -translate-x-full md:translate-x-0
-       transition-transform duration-300 shadow-2xl md:shadow-none">
+       class="fixed inset-y-0 left-0 z-50 w-72 h-screen sidebar-red flex flex-col
+       transform -translate-x-full transition-transform duration-300 shadow-2xl">
     
       <div class="px-5 py-5 border-b border-white/20 flex flex-row items-center gap-3 cursor-pointer"
            onclick="renderContent('home')">
@@ -520,10 +576,10 @@
         </div>
       
         <div class="min-w-0 flex-1">
-          <h1 class="text-white text-sm leading-tight font-extrabold whitespace-nowrap">
+          <h1 class="sidebar-brand-title text-white font-extrabold">
             ESAN UNIVERSITY
           </h1>
-          <p class="text-[10px] text-white/80 uppercase tracking-wider mt-1">
+          <p class="sidebar-brand-subtitle text-white/80 uppercase tracking-wider mt-1">
             Trámites académicos
           </p>
         </div>
@@ -532,7 +588,7 @@
 
     <div class="flex-1 min-h-0 overflow-y-auto py-3" id="menu-container"></div>
 
-    <div class="p-4 text-center text-[11px] text-white/75 border-t border-white/20 leading-relaxed">
+    <div class="p-4 text-center text-xs text-white/80 border-t border-white/20 leading-relaxed">
       Herramienta de orientación académica
     </div>
   </aside>
@@ -542,12 +598,12 @@
 
     <!-- TOP BAR -->
     <div class="h-16 border-b border-gray-200 flex items-center px-4 sm:px-6 gap-4 bg-white/95 backdrop-blur z-30 sticky top-0">
-      <button onclick="toggleMenu()" class="md:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100" aria-label="Abrir menú">
-        <i data-lucide="menu"></i>
+      <button id="sidebarMenuButton" type="button" onclick="toggleMenu()" class="shrink-0 text-gray-700 p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-300" aria-label="Abrir menú lateral" aria-controls="sidebar" aria-expanded="false">
+        <i data-lucide="menu" class="w-6 h-6"></i>
       </button>
 
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="hidden sm:flex w-9 h-9 rounded-xl bg-red-50 items-center justify-center">
+      <div class="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
+        <div class="hidden sm:flex w-9 h-9 rounded-xl bg-red-50 items-center justify-center shrink-0">
           <i data-lucide="graduation-cap" class="w-5 h-5 text-[var(--esan-red)]"></i>
         </div>
         <div class="min-w-0">
@@ -568,7 +624,7 @@
 
    A. CONFIGURACIÓN GENERAL
       - ULTIMO_CICLO_INICIAL / CICLO_RETORNO_INICIAL / CICLO_FINAL
-      - CICLOS_OCULTOS / CICLOS_NO_CONSIDERADOS_PAGO
+      - CICLOS_OCULTOS / CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO
       - APPS_SCRIPT_URL / CARRERAS
 
    B. DISPONIBILIDAD DE TRÁMITES
@@ -621,9 +677,9 @@
    1) CICLOS DISPONIBLES EN LOS DESPLEGABLES
 
    AHORA:
-   - "Último ciclo de estudios": desde 2003-1
-   - "Ciclo de retorno": desde 2027-1
-   - Último ciclo visible: 2050-1
+   - "Último ciclo matriculado": desde 2003-1 hasta 2026-1
+   - "Ciclo de retorno": aparece inicialmente en 2027-1
+   - Último ciclo disponible para retorno: 2050-1
 
    PARA CAMBIAR LOS RANGOS EN EL FUTURO:
    modifica ULTIMO_CICLO_INICIAL, CICLO_RETORNO_INICIAL
@@ -641,27 +697,47 @@
    Ejemplo:
    const CICLOS_OCULTOS = ["2027-2", "2028-1"];
    ------------------------------------------------------------ */
-// Primer ciclo disponible en "Último ciclo de estudios"
-const ULTIMO_CICLO_INICIAL = "2003-1";
+/*
+====================================================================
+>>>>>>>>>>>> AQUI CAMBIAR EL CICLO DE RETORNO <<<<<<<<<<<<<<<<<<<<<
+====================================================================
+PARA CAMBIAR EL PERIODO DE RETORNO PREDETERMINADO, MODIFICA
+CICLO_RETORNO_INICIAL. AHORA ESTÁ CONFIGURADO COMO "2027-1".
 
-// Primer ciclo permitido para retornar
+ULTIMO_CICLO_FINAL DEFINE HASTA QUÉ CICLO PUEDE INDICAR EL ESTUDIANTE
+COMO SU ÚLTIMO CICLO MATRICULADO. AHORA ESTÁ EN "2026-1".
+
+CUANDO ABRAS UN NUEVO PERIODO, ACTUALIZA AMBOS VALORES SI CORRESPONDE.
+EJEMPLO: SI EL RETORNO PASA A "2027-2", REVISA SI ULTIMO_CICLO_FINAL
+DEBE CAMBIAR A "2026-2".
+
+SI NECESITAS AMPLIAR LOS PERIODOS DE RETORNO DEL DESPLEGABLE,
+MODIFICA TAMBIÉN CICLO_FINAL MÁS ABAJO.
+NO CAMBIES LOS NOMBRES DE LAS CONSTANTES NI LAS COMILLAS.
+====================================================================
+*/
+// PRIMER CICLO DISPONIBLE EN "ÚLTIMO CICLO DE ESTUDIOS"
+const ULTIMO_CICLO_INICIAL = "2003-1";
+// ÚLTIMO CICLO QUE EL ESTUDIANTE PODRÁ ELEGIR COMO SU CICLO MATRICULADO
+const ULTIMO_CICLO_FINAL = "2026-1";
+
+// >>> AQUI CAMBIAR EL CICLO DE RETORNO CUANDO SE ABRA EL SIGUIENTE PERIODO <<<
 const CICLO_RETORNO_INICIAL = "2027-1";
 
-// Último ciclo disponible
+// ÚLTIMO CICLO DISPONIBLE EN LOS DESPLEGABLES
 const CICLO_FINAL = "2050-1";
 
 // Ciclos que quieras ocultar manualmente de los desplegables
 const CICLOS_OCULTOS = [];
 
-// Ciclos que NO se consideran únicamente para el cálculo del pago.
-// Sí siguen contando como ciclos sin estudiar para determinar el trámite.
-const CICLOS_NO_CONSIDERADOS_PAGO = [
+// CICLOS QUE SE EXCLUYEN TANTO DEL TOTAL DE CICLOS SUSPENDIDOS
+// COMO DEL CÁLCULO DEL PAGO. Actualiza esta lista solo si cambia la regla.
+const CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO = [
   "2020-1",
   "2020-2",
   "2021-1",
   "2021-2",
-  "2022-1",
-  "2022-2"
+  "2022-1"
 ];
 
 
@@ -708,7 +784,8 @@ const CARRERAS = [
   "Ingeniería en Ciencia de Datos",
   "Ingeniería Ambiental",
   "Ingeniería en Inteligencia Artificial",
-  "Ingeniería de Gestión Ambiental",
+  "Ingeniería en Gestión Ambiental",
+  "Administración y Talento Humano",
   "Psicología",
   "Psicología del Consumidor",
   "Psicología Organizacional",
@@ -744,6 +821,7 @@ const CONFIG_TRAMITES = {
   constanciaCreditos: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
   constanciaRendimientoFacultad: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
   constanciaRendimientoPromedio: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
+  constanciasAcademicas: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
   // ==================== FINANZAS ====================
   retiroCurso: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
   retiroCursoMenorCarga: { habilitado: true, fechaInicio: "", fechaFin: "", mostrarSiNoDisponible: true },
@@ -800,35 +878,43 @@ function obtenerEstadoTramite(key){
    comparten una sola pantalla calculadora porque el flujo determina cuál aplica.
    ============================================================ */
 const TRAMITES_DISPONIBLES = [
-  { key: "aperturaCurso", nombre: "Apertura de curso", icono: "book-open" },
-  { key: "autorizacionInfoAcademica", nombre: "Autorización para el acceso a información académica", icono: "shield-check" },
-  { key: "cambioCarrera", nombre: "Cambio de carrera", icono: "git-branch" },
-  { key: "cartaPresentacionEmpresa", nombre: "Carta de presentación para visita a empresa", icono: "building-2" },
-  { key: "cartaPoderCarne", nombre: "Carta poder para recojo de carné universitario", icono: "id-card" },
-  { key: "cartaPoderExamenes", nombre: "Carta poder para recojo de exámenes", icono: "file-check" },
-  { key: "constanciaConducta", nombre: "Constancia de Conducta", icono: "file-check" },
-  { key: "constanciaCreditos", nombre: "Constancia de Número de Créditos Acumulados", icono: "graduation-cap" },
-  { key: "constanciaPrimeraMatricula", nombre: "Constancia de Primera Matrícula", icono: "calendar-check" },
-  { key: "constanciaPromedio", nombre: "Constancia de Promedio Ponderado Acumulado", icono: "chart-no-axes-column-increasing" },
-  { key: "constanciaRendimientoFacultad", nombre: "Constancia de Rendimiento Académico por Facultad", icono: "file-chart-column" },
-  { key: "constanciaRendimientoPromedio", nombre: "Constancia de Rendimiento Académico y Promedio Ponderado", icono: "chart-no-axes-combined" },
-  { key: "cuartaMatricula", nombre: "Cuarta matrícula", icono: "book-open-check" },
-  { key: "matriculaRequisito", nombre: "Matrícula con requisito o precedente", icono: "list-check" },
-  { key: "matriculaMas24", nombre: "Matrícula en más de 24 créditos", icono: "plus-circle" },
-  { key: "matriculaMenos12", nombre: "Matrícula en menos de 12 créditos", icono: "minus-circle" },
-  { key: "primeraRevisionRezagado", nombre: "Primera revisión de examen de rezagado", icono: "file-search" },
-  { key: "primeraRevisionFinal", nombre: "Primera revisión de examen final", icono: "file-search" },
-  { key: "revisionPEPTA", nombre: "Revisión de evaluación permanente (PEP-TA)", icono: "clipboard-check" },
-  { key: "reservaReincorporacion", nombre: "Reserva de Matrícula / Reincorporación", icono: "rotate-ccw", especial: "automatico" },
-  { key: "retiroCiclo", nombre: "Retiro de Ciclo", icono: "calendar-x" },
-  { key: "retiroCurso", nombre: "Retiro de Curso", icono: "book-x" },
-  { key: "retiroCursoMenorCarga", nombre: "Retiro de Curso con Menor Carga Académica", icono: "book-down" },
-  { key: "retiroDefinitivo", nombre: "Retiro Definitivo", icono: "log-out" },
-  { key: "segundaRevisionRezagado", nombre: "Segunda revisión de examen de rezagado", icono: "file-search" },
-  { key: "segundaRevisionFinal", nombre: "Segunda revisión de examen final", icono: "file-search" },
-  { key: "emisionSilabos", nombre: "Solicitud de Emisión de Sílabos", icono: "files" },
-  { key: "examenRezagados", nombre: "Solicitud de Examen de Rezagados", icono: "clipboard-check" },
-  { key: "solicitudGeneral", nombre: "Solicitud general", icono: "file-text" }
+  {
+    key: "reservaReincorporacion",
+    nombre: "Reserva de Matrícula / Reincorporación",
+    icono: "rotate-ccw",
+    especial: "automatico",
+    descripcion: "El simulador determinará qué trámite corresponde. Reserva de Matrícula: S/ 300.00. Reincorporación: costo por calcular."
+  },
+  {
+    key: "examenRezagados",
+    nombre: "Solicitud de Examen de Rezagados",
+    icono: "clipboard-check",
+    descripcion: "Costo: S/ 100.00 por curso. Puede registrar varios cursos en una sola solicitud."
+  },
+  {
+    key: "emisionSilabos",
+    nombre: "Solicitud de Emisión de Sílabos",
+    icono: "files",
+    descripcion: "Costo: S/ 10.00 por sílabo."
+  },
+  {
+    key: "constanciaConducta",
+    nombre: "Constancia de Conducta",
+    icono: "file-check",
+    descripcion: "Costo: S/ 30.00."
+  },
+  {
+    key: "constanciaPrimeraMatricula",
+    nombre: "Constancia de Primera Matrícula",
+    icono: "calendar-check",
+    descripcion: "Costo: S/ 30.00."
+  },
+  {
+    key: "constanciasAcademicas",
+    nombre: "Constancias académicas",
+    icono: "files",
+    descripcion: "Aquí encontrarás las cuatro constancias académicas acordadas. El costo depende del tipo de constancia seleccionado."
+  }
 ];
 
 /* ============================================================
@@ -861,10 +947,8 @@ const db = {
 
         <div class="mb-5 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
-            <p class="text-xs uppercase tracking-[.2em] text-[var(--esan-red)] font-bold">30 trámites definidos</p>
-            <p class="text-xs text-gray-500 mt-1">Reserva y Reincorporación comparten una sola opción de simulación.</p>
-            <h3 class="text-2xl font-extrabold text-gray-900 mt-1">¿Qué trámite deseas realizar?</h3>
-            <p class="text-sm text-gray-500 mt-2">Todos los trámites están reunidos en esta sección y ordenados alfabéticamente.</p>
+            <h3 class="text-2xl font-extrabold text-gray-900">¿Qué trámite deseas realizar?</h3>
+            <p class="text-sm text-gray-500 mt-2">Selecciona una de las opciones disponibles. Los costos se indican en cada trámite.</p>
           </div>
           <div class="w-full lg:max-w-sm">
             <label class="field-label" for="buscarTramite">Buscar trámite</label>
@@ -882,13 +966,13 @@ const db = {
             return `
             <button type="button" class="portal-card ${estado.disponible ? 'active-card' : 'opacity-60 cursor-not-allowed'}" data-tramite="${t.nombre}" onclick="abrirTramite('${t.key}')" ${estado.disponible ? "" : 'disabled aria-disabled="true"'} title="${estado.mensaje}">
               <div class="flex justify-between items-start gap-4">
-                <div class="icon-box">
+                <div class="icon-box shrink-0">
                   <i data-lucide="${t.icono}" class="w-6 h-6"></i>
                 </div>
-                <span class="status-pill ${estado.disponible ? (t.especial ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600') : 'bg-amber-100 text-amber-800'}">${estado.disponible ? (t.especial ? 'Simulador disponible' : 'Formulario inicial') : estado.mensaje}</span>
+                <span class="status-pill max-w-full text-right ${estado.disponible ? 'bg-green-50 text-green-700' : 'bg-amber-100 text-amber-800'}">${estado.disponible ? 'Disponible' : estado.mensaje}</span>
               </div>
               <h4 class="text-base font-extrabold text-gray-900 mt-6 leading-snug">${t.nombre}</h4>
-              <p class="text-sm text-gray-500 mt-2 leading-relaxed">${estado.disponible ? (t.especial === 'reserva' ? 'Calcula si corresponde reserva de matrícula según los ciclos sin estudiar.' : t.especial === 'reincorporacion' ? 'Calcula si corresponde reincorporación según los ciclos sin estudiar.' : 'Completa tus datos iniciales para este trámite.') : estado.mensaje + '.'}</p>
+              <p class="text-sm text-gray-500 mt-2 leading-relaxed">${estado.disponible ? (t.descripcion || (t.especial === 'reserva' ? 'Calcula si corresponde reserva de matrícula según los ciclos sin estudiar.' : t.especial === 'reincorporacion' ? 'Calcula si corresponde reincorporación según los ciclos sin estudiar.' : 'Completa tus datos iniciales para este trámite.')) : estado.mensaje + '.'}</p>
               <div class="mt-5 inline-flex items-center gap-2 text-sm font-bold ${estado.disponible ? 'text-[var(--esan-red)]' : 'text-gray-500'}">
                 ${estado.disponible ? 'Iniciar trámite' : 'No disponible'}
                 ${estado.disponible ? '<i data-lucide="arrow-right" class="w-4 h-4"></i>' : ''}
@@ -951,6 +1035,15 @@ const db = {
           </div>
         </div>
 
+        <div class="mt-5 mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-950 leading-relaxed">
+          <p class="font-extrabold">ANTES DE CONTINUAR</p>
+          <ul class="list-disc pl-5 mt-2 space-y-1">
+            <li>PARA LA RESERVA DE MATRÍCULA, DEBES VERIFICAR QUE NO TENGAS DEUDAS PENDIENTES. CONSULTAS DE FINANZAS: <a class="font-bold underline" href="mailto:finanzaspregrado@ue.edu.pe">finanzaspregrado@ue.edu.pe</a>.</li>
+            <li>SI ERES BENEFICIARIO(A) DE PRONABEC, COORDINA TU CASO CON <a class="font-bold underline" href="mailto:amadariaga@esan.edu.pe">amadariaga@esan.edu.pe</a>.</li>
+            <li>EL SIMULADOR DETERMINA EL TRÁMITE Y CALCULA EL MONTO ORIENTATIVO. EL PAGO SE GESTIONARÁ EN LA PÁGINA INDEPENDIENTE DE PAGOS.</li>
+          </ul>
+        </div>
+
         <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-6 items-start">
 
           <!-- FORMULARIO -->
@@ -958,55 +1051,44 @@ const db = {
             <div class="flex items-center gap-3 mb-7">
               <div class="step-dot">1</div>
               <div>
-                <h3 class="text-lg font-extrabold text-gray-900">Datos del estudiante</h3>
-                <p class="text-xs text-gray-500 mt-1">Todos los campos son obligatorios.</p>
+                <h3 class="text-lg font-extrabold text-gray-900">DATOS DEL ESTUDIANTE</h3>
+                <p class="text-xs text-gray-500 mt-1">TODOS LOS CAMPOS SON OBLIGATORIOS.</p>
               </div>
             </div>
 
             <form id="retornoForm" novalidate class="space-y-5" onsubmit="event.preventDefault(); calcularRetorno();">
 
+              <!-- DATOS PERSONALES: MANTENER ESTE ORDEN -->
               <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label class="field-label" for="apellidos">Apellidos completos</label>
-                  <input id="apellidos" name="apellidos" type="text" class="field"
-                         placeholder="APELLIDOS COMPLETOS"
-                         autocomplete="family-name">
-                  <p id="err-apellidos" class="error-text hidden"></p>
-                </div>
-
-                <div>
-                  <label class="field-label" for="nombres">Nombres completos</label>
-                  <input id="nombres" name="nombres" type="text" class="field"
-                         placeholder="NOMBRES COMPLETOS"
-                         autocomplete="given-name">
-                  <p id="err-nombres" class="error-text hidden"></p>
-                </div>
-              </div>
-
-              <div class="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label class="field-label" for="codigo">Código de estudiante</label>
-                  <!-- Código del estudiante: se hereda del acceso y no se edita en este formulario. -->
-                  <input id="codigo" name="codigo" type="text" inputmode="numeric"
-                         maxlength="8" class="field bg-gray-100 cursor-not-allowed" value="${atributoCodigoSesion()}"
-                         autocomplete="off" readonly aria-readonly="true">
-                  <p class="helper">Debe contener exactamente 8 dígitos.</p>
+                  <label class="field-label" for="codigo">CÓDIGO DE ESTUDIANTE</label>
+                  <input id="codigo" name="codigo" type="text" inputmode="numeric" maxlength="8"
+                         class="field bg-gray-100 cursor-not-allowed" value="${atributoCodigoSesion()}"
+                         autocomplete="off" readonly aria-readonly="true" required>
+                  <p class="helper">SE COMPLETA AUTOMÁTICAMENTE CON EL CÓDIGO DE TU SESIÓN.</p>
                   <p id="err-codigo" class="error-text hidden"></p>
                 </div>
-
                 <div>
-                  <label class="field-label" for="correo">Correo electrónico</label>
-                  <input id="correo" name="correo" type="email" class="field"
-                         placeholder="nombre@correo.com" autocomplete="email">
-                  <p class="helper">La información del resultado será enviada a este correo.</p>
+                  <label class="field-label" for="correo">CORREO INSTITUCIONAL</label>
+                  <input id="correo" name="correoInstitucional" type="email"
+                         class="field bg-gray-100 cursor-not-allowed" value="${atributoCodigoSesion()}@ue.edu.pe"
+                         autocomplete="email" readonly aria-readonly="true" required>
+                  <p class="helper">SE GENERA AUTOMÁTICAMENTE A PARTIR DE TU CÓDIGO.</p>
                   <p id="err-correo" class="error-text hidden"></p>
                 </div>
               </div>
 
               <div>
-                <label class="field-label" for="carrera">Carrera</label>
-                <select id="carrera" name="carrera" class="field">
-                  <option value="">Seleccione su carrera</option>
+                <label class="field-label" for="nombreCompleto">APELLIDOS Y NOMBRES COMPLETOS</label>
+                <input id="nombreCompleto" name="nombreCompleto" type="text" class="field"
+                       placeholder="APELLIDOS Y NOMBRES COMPLETOS" autocomplete="name" required>
+                <p id="err-nombreCompleto" class="error-text hidden"></p>
+              </div>
+
+              <div>
+                <label class="field-label" for="carrera">CARRERA ACTUAL</label>
+                <select id="carrera" name="carrera" class="field" required>
+                  <option value="">SELECCIONE SU CARRERA</option>
                 </select>
                 <p id="err-carrera" class="error-text hidden"></p>
               </div>
@@ -1015,41 +1097,83 @@ const db = {
                 <div class="flex items-center gap-3 mb-5">
                   <div class="step-dot">2</div>
                   <div>
-                    <h3 class="text-lg font-extrabold text-gray-900">Información académica</h3>
-                    <p class="text-xs text-gray-500 mt-1">El ciclo de retorno debe ser posterior a tu último ciclo de estudios.</p>
+                    <h3 class="text-lg font-extrabold text-gray-900">INFORMACIÓN ACADÉMICA</h3>
+                    <p class="text-xs text-gray-500 mt-1">EL CICLO DE RETORNO DEBE SER POSTERIOR A TU ÚLTIMO CICLO DE ESTUDIOS.</p>
                   </div>
                 </div>
 
                 <div class="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label class="field-label" for="ultimoCiclo">Último ciclo de estudios</label>
+                    <label class="field-label" for="ultimoCiclo">ÚLTIMO CICLO DE ESTUDIOS</label>
                     <select id="ultimoCiclo" name="ultimoCiclo" class="field">
-                      <option value="">Seleccione un ciclo</option>
+                      <option value="">SELECCIONE UN CICLO</option>
                     </select>
                     <p class="helper">
-                      Indica el último ciclo en el que estuviste matriculado(a). Puede ser un ciclo que culminaste
-                      o el ciclo en el que realizaste tu retiro de semestre.
+                      INDICA EL ÚLTIMO CICLO EN EL QUE ESTUVISTE MATRICULADO(A). PUEDE SER UN CICLO QUE CULMINASTE
+                      O EL CICLO EN EL QUE REALIZASTE TU RETIRO DE SEMESTRE.
                     </p>
                     <p id="err-ultimoCiclo" class="error-text hidden"></p>
                   </div>
 
                   <div>
-                    <label class="field-label" for="cicloRetorno">Ciclo en el que deseas iniciar nuevamente tus estudios</label>
+                    <label class="field-label" for="cicloRetorno">CICLO EN EL QUE DESEAS RETOMAR TUS ESTUDIOS</label>
                     <select id="cicloRetorno" name="cicloRetorno" class="field">
-                      <option value="">Seleccione un ciclo</option>
+                      <option value="">SELECCIONE UN CICLO</option>
                     </select>
                     <p class="helper">
-                      No se considera como ciclo suspendido el semestre en el que retomas tus estudios.
+                      NO SE CONSIDERA COMO CICLO SUSPENDIDO EL SEMESTRE EN EL QUE RETOMAS TUS ESTUDIOS.
                     </p>
                     <p id="err-cicloRetorno" class="error-text hidden"></p>
                   </div>
                 </div>
               </div>
 
+              <section class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 space-y-4" aria-live="polite">
+                <h3 class="text-base font-extrabold text-blue-950">RESUMEN AUTOMÁTICO DE LOS CICLOS</h3>
+                <div>
+                  <label class="field-label" for="ciclosNoEstudiados">CUÁL(ES) CICLO(S) NO ESTUDIÓ O NO ESTUDIARÁ</label>
+                  <input id="ciclosNoEstudiados" name="ciclosNoEstudiados" class="field bg-white" type="text" readonly aria-readonly="true" placeholder="SE COMPLETARÁ AUTOMÁTICAMENTE AL SELECCIONAR LOS CICLOS">
+                  <p class="helper">LOS CICLOS SE CALCULAN A PARTIR DEL ÚLTIMO CICLO MATRICULADO Y EL PERIODO DE RETORNO.</p>
+                </div>
+                <div>
+                  <label class="field-label" for="numeroCiclosSuspendidos">NÚMERO DE CICLOS SUSPENDIDOS</label>
+                  <input id="numeroCiclosSuspendidos" name="numeroCiclosSuspendidos" class="field bg-white" type="text" readonly aria-readonly="true" placeholder="SE CALCULARÁ AUTOMÁTICAMENTE">
+                </div>
+              </section>
+
+              <section id="descripcionTramiteRetorno" class="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 space-y-3" aria-live="polite">
+                <p class="font-bold text-gray-800">SELECCIONE EL ÚLTIMO CICLO Y EL PERIODO DE RETORNO PARA MOSTRAR LA INFORMACIÓN DEL TRÁMITE QUE CORRESPONDE.</p>
+              </section>
+
+              <section id="documentoTramiteRetorno" class="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 space-y-4" aria-live="polite">
+                <p class="font-bold text-gray-800">EL FORMATO Y LAS DECLARACIONES SE MOSTRARÁN SEGÚN EL TRÁMITE QUE CORRESPONDA.</p>
+              </section>
+
+              <div>
+                <label class="field-label" for="motivoRetorno">MOTIVO DE LA SOLICITUD</label>
+                <select id="motivoRetorno" name="motivoSolicitud" class="field" required>
+                  <option value="">SELECCIONE UN MOTIVO</option>
+                  <option value="ACADEMICO">ACADÉMICO</option>
+                  <option value="ECONOMICO">ECONÓMICO</option>
+                  <option value="LABORAL">LABORAL</option>
+                  <option value="SALUD">SALUD</option>
+                  <option value="PERSONAL">PERSONAL</option>
+                  <option value="OTROS">OTROS</option>
+                </select>
+                <p id="err-motivoRetorno" class="error-text hidden"></p>
+              </div>
+
+              <div>
+                <label class="field-label" for="detalleMotivoRetorno">EXPLIQUE BREVEMENTE EL MOTIVO</label>
+                <textarea id="detalleMotivoRetorno" name="detalleMotivoSolicitud" class="field" rows="3"
+                          maxlength="1000" placeholder="EXPLIQUE BREVEMENTE EL MOTIVO DE SU SOLICITUD" required></textarea>
+                <p id="err-detalleMotivoRetorno" class="error-text hidden"></p>
+              </div>
+
               <label class="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4 cursor-pointer">
                 <input id="confirmacion" type="checkbox" class="mt-1 accent-red-600">
                 <span class="text-sm text-gray-600 leading-relaxed">
-                  Confirmo que la información ingresada es correcta y deseo conocer la orientación correspondiente a mi caso.
+                  CONFIRMO QUE LA INFORMACIÓN INGRESADA ES CORRECTA Y DESEO CONOCER LA ORIENTACIÓN CORRESPONDIENTE A MI CASO.
                 </span>
               </label>
               <p id="err-confirmacion" class="error-text hidden"></p>
@@ -1058,7 +1182,7 @@ const db = {
                       class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-7 py-3.5 rounded-xl
                              bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] text-white font-bold transition shadow-lg">
                 <i data-lucide="calculator" class="w-5 h-5"></i>
-                Calcular mi trámite
+                CALCULAR MI TRÁMITE
               </button>
 
             </form>
@@ -1389,7 +1513,7 @@ function escaparHTML(valor){
 }
 
 function opcionesCarrerasHTML(){
-  return `<option value="">Seleccione su carrera</option>${CARRERAS.map(c => `<option value="${escaparHTML(c)}">${escaparHTML(c).toLocaleUpperCase("es-PE")}</option>`).join("")}`;
+  return `<option value="">SELECCIONE SU CARRERA</option>${CARRERAS.map(c => `<option value="${escaparHTML(c)}">${escaparHTML(c).toLocaleUpperCase("es-PE")}</option>`).join("")}<option value="OTROS">OTROS</option>`;
 }
 
 function opcionesCiclosPosteriores(cicloBase){
@@ -1491,12 +1615,12 @@ function renderFormularioRetiro(tramite){
     <div class="sm:col-span-2"><label class="field-label" for="cursoRetirar">Curso(s) a retirar</label><select id="cursoRetirar" class="field cursoRetirarSelect" required disabled onchange="toggleOtroCurso()"><option value="">Seleccione primero la carrera</option></select><p class="helper">Se permitirá incluir varios cursos en una misma solicitud. La lista oficial de cursos por carrera está pendiente de incorporar; por ahora, selecciona OTRO y escribe el nombre.</p><div id="otroCursoWrap" class="hidden mt-3"><label class="field-label" for="otroCurso">Especifica el curso</label><input id="otroCurso" class="field" type="text" placeholder="Nombre del curso"></div><div id="cursosAdicionalesRetiro" class="space-y-4 mt-4"></div><button type="button" onclick="agregarCursoRetiro()" class="mt-4 rounded-xl border border-[var(--esan-red)] px-4 py-2 text-sm font-bold text-[var(--esan-red)]">+ Agregar otro curso</button></div>
     <div><label class="field-label" for="motivoRetiro">Motivo del retiro</label><select id="motivoRetiro" class="field" required><option value="">Seleccione un motivo</option>${["ACADÉMICO","ECONÓMICO","FALTA DE TIEMPO","MOTIVOS PERSONALES","SALUD","VOCACIONAL","OTRO"].map(x=>`<option>${x}</option>`).join("")}</select></div>
     <div><label class="field-label" for="creditosRestantes">Total de créditos en los que quedará matriculado(a)</label><select id="creditosRestantes" class="field" required onchange="toggleOtroCredito()"><option value="">Seleccione una cantidad</option>${Array.from({length:27},(_,i)=>`<option value="${i}">${i}</option>`).join("")}<option value="OTRO">OTRO</option></select><div id="otroCreditoWrap" class="hidden mt-3"><label class="field-label" for="otroCredito">Especifica la cantidad de créditos</label><input id="otroCredito" class="field" type="number" min="0" max="100" placeholder="Cantidad de créditos"></div></div>
-    <div><label class="field-label" for="formatoRetiro">Adjuntar formato de ${esMenor?"Retiro de Curso con Menor Carga Académica":"Retiro de Curso"}</label><input id="formatoRetiro" class="field" type="file" accept=".pdf,.doc,.docx" required><p class="helper">Adjunta el formato correspondiente a este trámite.</p></div>`:"";
+    <div class="format-upload-card rounded-xl border border-gray-200 p-4"><label class="field-label" for="formatoRetiro">Adjuntar formato de ${esMenor?"Retiro de Curso con Menor Carga Académica":"Retiro de Curso"}</label><input id="formatoRetiro" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div>`:"";
   const campoCicloRetorno=esCiclo?`<div><label class="field-label" for="motivoRetiro">Motivo del retiro de ciclo</label><select id="motivoRetiro" class="field" required><option value="">Seleccione un motivo</option>${["ACADÉMICO","ECONÓMICO","FALTA DE TIEMPO","MOTIVOS PERSONALES","SALUD","VOCACIONAL","OTRO"].map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div><div><label class="field-label" for="cicloRetornoRetiro">Ciclo a retornar</label><select id="cicloRetornoRetiro" class="field" required><option value="">Seleccione un ciclo de retorno</option>${ciclosRetorno.map(c=>`<option value="${c}">${c}</option>`).join("")}</select><p class="helper">Se muestran ciclos posteriores al ciclo de retiro 2026-2.</p></div><div><label class="field-label" for="rindioFinal">¿Rindió examen final de algún curso matriculado en el presente ciclo?</label><select id="rindioFinal" class="field" required onchange="actualizarValidacionExamenFinal()"><option value="">Seleccione una opción</option><option value="NO">NO</option><option value="SI">SÍ</option></select><div id="avisoExamenFinal" class="hidden mt-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">Según la declaración del trámite, si rindió evaluación final de algún curso matriculado en el presente ciclo, la solicitud no procederá.</div></div>`:"";
-  const docsDefinitivo=esDefinitivo?`<div id="segundaEtapaDefinitivo" class="hidden mt-8 border-t border-gray-200 pt-6"><div class="mb-5"><p class="text-xs uppercase tracking-[.2em] text-[var(--esan-red)] font-bold">Segunda etapa</p><h3 class="text-xl font-extrabold text-gray-900 mt-1">Presentación de documentos</h3><p class="text-sm text-gray-500 mt-2">Después de la entrevista con Permanencia Estudiantil, adjunta la ficha de atención y el formato completado.</p></div><div class="space-y-5"><div><label class="field-label" for="fichaAtencion">Ficha de atención de Permanencia Estudiantil</label><input id="fichaAtencion" class="field" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required></div><div><label class="field-label" for="formatoDefinitivo">Formato de Retiro Definitivo</label><input id="formatoDefinitivo" class="field" type="file" accept=".pdf,.doc,.docx" required><p class="helper"><a class="underline text-[var(--esan-red)]" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_RETIRO_DEFINITIVO.docx" target="_blank" rel="noopener">Descargar formato de Retiro Definitivo</a></p></div><div class="space-y-4"><p class="font-extrabold text-gray-900">Declaro que:</p>${declaracionesDefinitivo.map((d,i)=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionRetiro mt-1 accent-red-600" data-declaracion="${i}"><span class="text-sm leading-relaxed text-gray-700">${d}</span></label>`).join("")}</div><button type="button" id="btnEnviarDocumentosDefinitivo" class="w-full sm:w-auto rounded-xl bg-[var(--esan-red)] px-7 py-3.5 text-white font-bold hover:bg-[var(--esan-red-dark)]" onclick="validarDocumentosRetiroDefinitivo()">Validar documentos</button></div></div>`:"";
+  const docsDefinitivo=esDefinitivo?`<div id="segundaEtapaDefinitivo" class="hidden mt-8 border-t border-gray-200 pt-6"><div class="mb-5"><p class="text-xs uppercase tracking-[.2em] text-[var(--esan-red)] font-bold">Segunda etapa</p><h3 class="text-xl font-extrabold text-gray-900 mt-1">Presentación de documentos</h3><p class="text-sm text-gray-500 mt-2">Después de la entrevista con Permanencia Estudiantil, adjunta la ficha de atención y el formato completado.</p></div><div class="space-y-5"><div class="format-upload-card rounded-xl border border-gray-200 p-4"><label class="field-label" for="fichaAtencion">FICHA DE ATENCIÓN DE PERMANENCIA ESTUDIANTIL *</label><input id="fichaAtencion" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div><div class="format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:</p><p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_RETIRO_DEFINITIVO.docx" target="_blank" rel="noopener"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p><label class="field-label" for="formatoDefinitivo">ADJUNTAR FORMATO DE RETIRO DEFINITIVO *</label><input id="formatoDefinitivo" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div><div class="space-y-4"><p class="font-extrabold text-gray-900">Declaro que:</p>${declaracionesDefinitivo.map((d,i)=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionRetiro mt-1 accent-red-600" data-declaracion="${i}"><span class="text-sm leading-relaxed text-gray-700">${d}</span></label>`).join("")}</div><button type="button" id="btnEnviarDocumentosDefinitivo" class="w-full sm:w-auto rounded-xl bg-[var(--esan-red)] px-7 py-3.5 text-white font-bold hover:bg-[var(--esan-red-dark)]" onclick="validarDocumentosRetiroDefinitivo()">Validar documentos</button></div></div>`:"";
   const seccionDeclaraciones=(esCurso||esMenor||esCiclo)?`<div class="border-t border-gray-200 pt-6 mt-7"><h3 class="text-lg font-extrabold text-gray-900 mb-4">Declaro que:</h3><div class="space-y-4">${declaraciones.map((d,i)=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionRetiro mt-1 accent-red-600" data-declaracion="${i}" required><span class="text-sm leading-relaxed text-gray-700">${d}</span></label>`).join("")}</div></div>`:"";
   const botonTexto=esDefinitivo?"Solicitar información sobre el Retiro Definitivo":"Enviar solicitud";
-  const explicacion=esDefinitivo?"Primero recibirás las instrucciones para la entrevista y los documentos. Después podrás completar la segunda etapa.":"Completa los campos obligatorios. Los datos y archivos no se enviarán ni guardarán hasta conectar este trámite al backend institucional.";
+  const explicacion=esDefinitivo?"Primero recibirás las instrucciones para la entrevista y los documentos. Después podrás completar la segunda etapa.":"Completa los campos obligatorios y adjunta los documentos solicitados.";
 
   document.getElementById("viewer").innerHTML=`
     <div class="max-w-4xl mx-auto animate-[fadeIn_0.3s]">
@@ -1512,7 +1636,7 @@ function renderFormularioRetiro(tramite){
           ${campoCiclo}
         </div><div id="avisoPronabec" class="hidden"></div></section>
         ${esCurso||esMenor?`<section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-5">Información del curso a retirar</h3><div class="grid sm:grid-cols-2 gap-5">${campoCurso}</div><div class="mt-6 space-y-4">${seccionDeclaraciones}</div></section>`:""}
-        ${esCiclo?`<section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-5">Información del retiro</h3><div class="grid sm:grid-cols-2 gap-5">${campoCicloRetorno}<div><label class="field-label" for="formatoRetiro">Formato de Retiro de Ciclo</label><input id="formatoRetiro" class="field" type="file" accept=".pdf,.doc,.docx" required></div></div><div class="mt-6">${seccionDeclaraciones}</div></section>`:""}
+        ${esCiclo?`<section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-5">Información del retiro</h3><div class="grid sm:grid-cols-2 gap-5">${campoCicloRetorno}<div class="format-upload-card rounded-xl border border-gray-200 p-4"><label class="field-label" for="formatoRetiro">FORMATO DE RETIRO DE CICLO *</label><input id="formatoRetiro" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div></div><div class="mt-6">${seccionDeclaraciones}</div></section>`:""}
         ${esDefinitivo?`<section class="border-t border-gray-200 pt-6"><div class="rounded-xl bg-gray-50 border border-gray-200 p-4 text-sm text-gray-700 leading-relaxed"><p class="font-bold">Antes de iniciar</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Si el retiro se formaliza una vez iniciadas las clases, se asume el 100% de los derechos académicos del período.</li><li>No debe presentar adeudos de libros o material académico en CENDOC.</li><li>No debe encontrarse de baja académica.</li><li>Los estudiantes con Beca Pronabec deben gestionar el retiro con la coordinadora del programa.</li></ul></div></section>`:""}
         <button id="btnEnviarRetiro" type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-7 py-3.5 text-white font-bold shadow-lg"><i data-lucide="${esDefinitivo?"mail":"send"}" class="w-5 h-5"></i>${botonTexto}</button>
         <div id="estadoFormularioRetiro" class="hidden" aria-live="polite"></div>
@@ -1605,11 +1729,14 @@ function procesarFormularioRetiro(key){
   if(key!=="retiroDefinitivo" && checkboxes.some(c=>!c.checked)){
     mostrarEstadoRetiro("Debes marcar todas las declaraciones obligatorias antes de enviar el formulario.","error");return;
   }
+  const formularioRetiro = document.getElementById("formularioRetiro");
+  const archivosRetiro=[...document.querySelectorAll("#formularioRetiro input[type=\"file\"]:required")];
+  archivosRetiro.forEach(el=>{if(el.files?.length&&!/\.pdf$/i.test(el.files[0].name))faltan.push(`${el.id} (SOLO PDF)`);});
+  obtenerErroresCamposObligatorios(formularioRetiro).forEach(error=>faltan.push(error.element.id || error.mensaje));
   if(faltan.length){
-    mostrarEstadoRetiro("Completa todos los campos obligatorios y adjunta los documentos solicitados.","error");
+    mostrarEstadoRetiro("Completa todos los campos obligatorios y adjunta los documentos solicitados en PDF.","error");
     const first=document.getElementById(faltan[0]);first?.focus();return;
   }
-  const formularioRetiro = document.getElementById("formularioRetiro");
   const datosRetiro = recopilarDatosFormulario(formularioRetiro);
   const detallesOtroRetiro = {};
   formularioRetiro?.querySelectorAll("[data-otro-campo]").forEach(input=>{
@@ -1625,8 +1752,8 @@ function procesarFormularioRetiro(key){
   ultimaSolicitudFormularioPreparada = { accion:"registrarSolicitud", tramite:key, fechaRegistro:new Date().toISOString(), datos:datosRetiro, detallesOtro:detallesOtroRetiro };
   if(key==="retiroDefinitivo"){
     const nombre=`${document.getElementById("nombres").value.trim()} ${document.getElementById("apellidos").value.trim()}`.toLocaleUpperCase("es-PE");
-    const emailPreview=`<div class="mt-4 rounded-lg border border-gray-200 bg-white p-4 text-gray-700"><p><strong>Para:</strong> correo institucional del estudiante (debe obtenerse del padrón o definirse en backend)</p><p><strong>CC:</strong> Permanencia Estudiantil (falta configurar su correo)</p><p class="mt-3"><strong>Asunto:</strong> Indicaciones para iniciar el trámite de Retiro Definitivo</p><p class="mt-3">Estimado(a) estudiante, ${escaparHTML(nombre)}:</p><p class="mt-2">Reciba un cordial saludo. Hemos recibido su consulta sobre el trámite de Retiro Definitivo de la Universidad ESAN.</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Si el retiro se formaliza una vez iniciadas las clases, deberá asumir el 100% de los derechos académicos del período.</li><li>No deberá presentar adeudos de libros o material académico en CENDOC.</li><li>No deberá encontrarse de baja académica.</li><li>Si cuenta con Beca Pronabec, deberá gestionarlo directamente con Alida Madariaga: <a class="underline" href="mailto:amadariaga@esan.edu.pe">amadariaga@esan.edu.pe</a>.</li></ul><p class="mt-3"><strong>Paso 1:</strong> coordinar una entrevista con Permanencia Estudiantil, que emitirá la ficha de atención.</p><p class="mt-2"><strong>Paso 2:</strong> descargar y completar el <a class="underline text-[var(--esan-red)]" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_RETIRO_DEFINITIVO.docx" target="_blank" rel="noopener">formato de Retiro Definitivo</a>.</p><p class="mt-2"><strong>Paso 3:</strong> cuando tenga ambos documentos, deberá presentarlos mediante la sección de presentación de documentos del simulador (en desarrollo).</p><p class="mt-2">Si presenta boletas vencidas pendientes de pago, no procederá el registro hasta regularizar su situación con <a class="underline" href="mailto:cobranzaspregrado@ue.edu.pe">cobranzaspregrado@ue.edu.pe</a>, con copia a finanzaspregrado@ue.edu.pe, echavez@esan.edu.pe y bbarzola@esan.edu.pe.</p><p class="mt-3 text-xs text-amber-800"><strong>Vista previa:</strong> este correo no se ha enviado. Falta conectar el envío automático en Apps Script y configurar el correo de Permanencia.</p></div><button type="button" onclick="mostrarSegundaEtapaDefinitivo()" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] px-5 py-3 font-bold text-white"><i data-lucide="file-up" class="w-4 h-4"></i>Ya tengo los documentos</button>`;
-    mostrarEstadoRetiro("Solicitud de información validada en la vista previa. Aquí se mostrarían las instrucciones y se enviaría el correo cuando conectemos el backend.","info",emailPreview);
+    const emailPreview=`<div class="mt-4 rounded-lg border border-gray-200 bg-white p-4 text-gray-700"><p><strong>Para:</strong> correo institucional del estudiante</p><p class="mt-3"><strong>Asunto:</strong> Indicaciones para iniciar el trámite de Retiro Definitivo</p><p class="mt-3">Estimado(a) estudiante, ${escaparHTML(nombre)}:</p><p class="mt-2">Reciba un cordial saludo. Hemos recibido su consulta sobre el trámite de Retiro Definitivo de la Universidad ESAN.</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Si el retiro se formaliza una vez iniciadas las clases, deberá asumir el 100% de los derechos académicos del período.</li><li>No deberá presentar adeudos de libros o material académico en CENDOC.</li><li>No deberá encontrarse de baja académica.</li><li>Si cuenta con Beca Pronabec, deberá gestionarlo directamente con Alida Madariaga: <a class="underline" href="mailto:amadariaga@esan.edu.pe">amadariaga@esan.edu.pe</a>.</li></ul><p class="mt-3"><strong>Paso 1:</strong> coordinar una entrevista con Permanencia Estudiantil, que emitirá la ficha de atención.</p><p class="mt-2"><strong>Paso 2:</strong> descargar y completar el <a class="underline text-[var(--esan-red)]" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_RETIRO_DEFINITIVO.docx" target="_blank" rel="noopener">formato de Retiro Definitivo</a>.</p><p class="mt-2"><strong>Paso 3:</strong> cuando tenga ambos documentos, deberá presentarlos mediante la sección de presentación de documentos del simulador (en desarrollo).</p><p class="mt-2">Si presenta boletas vencidas pendientes de pago, no procederá el registro hasta regularizar su situación con <a class="underline" href="mailto:cobranzaspregrado@ue.edu.pe">cobranzaspregrado@ue.edu.pe</a>, con copia a finanzaspregrado@ue.edu.pe, echavez@esan.edu.pe y bbarzola@esan.edu.pe.</p></div><button type="button" onclick="mostrarSegundaEtapaDefinitivo()" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] px-5 py-3 font-bold text-white"><i data-lucide="file-up" class="w-4 h-4"></i>Ya tengo los documentos</button>`;
+    mostrarEstadoRetiro("Se validó la información ingresada. Revisa las indicaciones para continuar con el trámite.","info",emailPreview);
     return;
   }
   let extra="";
@@ -1637,7 +1764,7 @@ function procesarFormularioRetiro(key){
       extra=`<div class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4"><p class="font-bold">Recuerda realizar tu Reserva de Matrícula</p><p class="mt-1">Según el ciclo de retorno seleccionado, también debes realizar el trámite de Reserva de Matrícula.</p><button type="button" onclick="abrirTramiteEspecial('reserva')" class="mt-3 rounded-xl bg-[var(--esan-red)] px-5 py-3 font-bold text-white">Ir a Reserva de Matrícula</button></div>`;
     }
   }
-  mostrarEstadoRetiro("Formulario validado. Los datos, incluidos los detalles de «OTRO», están preparados, pero todavía no se han enviado ni guardado. Falta conectar el Apps Script con las columnas correspondientes de Google Sheets.","success",extra);
+  mostrarEstadoRetiro("Los campos obligatorios se validaron correctamente. Revisa la información ingresada.","success",extra);
 }
 
 function mostrarSegundaEtapaDefinitivo(){
@@ -1651,7 +1778,8 @@ function validarDocumentosRetiroDefinitivo(){
   if(!ficha?.files?.length||!formato?.files?.length||checks.some(c=>!c.checked)){
     mostrarEstadoRetiro("Para continuar, adjunta la ficha de atención, el formato de Retiro Definitivo y marca las cinco declaraciones obligatorias.","error");return;
   }
-  mostrarEstadoRetiro("Los documentos y declaraciones se validaron en esta vista previa. Todavía no se han subido ni guardado; falta conectar la carga segura de archivos y el registro en el backend.","success");
+  if(!/\.pdf$/i.test(ficha.files[0].name)||!/\.pdf$/i.test(formato.files[0].name)){mostrarEstadoRetiro("Los documentos adjuntos deben estar en formato PDF.","error");return;}
+  mostrarEstadoRetiro("Los documentos y las declaraciones se validaron correctamente.","success");
 }
 
 
@@ -1712,7 +1840,7 @@ function buildMenu(){
   const container = document.getElementById("menu-container");
 
   container.innerHTML = `
-    <div class="px-4 pb-2 pt-1 text-[10px] uppercase tracking-[.2em] text-white/65 font-bold">
+    <div class="px-4 pb-2 pt-1 text-xs uppercase tracking-[.16em] text-white/75 font-bold">
       Navegación
     </div>
 
@@ -1721,7 +1849,7 @@ function buildMenu(){
       <span class="text-sm">Inicio</span>
     </button>
 
-    <div class="px-4 pb-2 pt-5 text-[10px] uppercase tracking-[.2em] text-white/65 font-bold">
+    <div class="px-4 pb-2 pt-5 text-xs uppercase tracking-[.16em] text-white/75 font-bold">
       Trámites
     </div>
 
@@ -1902,8 +2030,10 @@ function asegurarCampoOtro(select){
     wrap = document.createElement("div");
     wrap.className = "campoOtroWrap hidden mt-3";
     wrap.dataset.otroPara = key;
-    wrap.innerHTML = `<label class="field-label" for="${inputId}">Especifica ${escaparHTML(labelTexto.toLocaleLowerCase("es-PE"))}</label><input id="${inputId}" name="${key}_Otro" data-otro-campo="${key}" class="field" type="text" maxlength="500" placeholder="Escribe el detalle" />`;
+    wrap.innerHTML = `<label class="field-label" for="${inputId}">ESPECIFIQUE ${escaparHTML(labelTexto.toLocaleUpperCase("es-PE"))}</label><input id="${inputId}" name="${key}_Otro" data-otro-campo="${key}" class="field" type="text" maxlength="500" placeholder="ESCRIBA EL DETALLE" />`;
     select.insertAdjacentElement("afterend", wrap);
+    const otroInput=wrap.querySelector("input");
+    otroInput?.addEventListener("input",()=>{otroInput.value=otroInput.value.toLocaleUpperCase("es-PE");});
   }
   return wrap;
 }
@@ -1922,7 +2052,7 @@ function manejarCampoOtro(select){
 
 function inicializarCamposOtro(root=document){
   root.querySelectorAll("select").forEach(select => {
-    if([...select.options].some(esOpcionOtro) && select.id !== "cursoRetirar" && select.id !== "creditosRestantes" && !select.classList.contains("cursoRetirarSelect")){
+    if([...select.options].some(esOpcionOtro) && select.id !== "cursoRetirar" && select.id !== "creditosRestantes" && select.id !== "motivoConstanciaCaja" && !select.classList.contains("cursoRetirarSelect")){
       asegurarCampoOtro(select);
       manejarCampoOtro(select);
     }
@@ -1952,8 +2082,73 @@ function recopilarDatosFormulario(form){
    ============================================================ */
 let ultimaSolicitudFormularioPreparada = null;
 
+/* ============================================================
+   CAJA — FORMULARIO ÚNICO DE CONSTANCIAS ACADÉMICAS
+   ============================================================ */
+function generarOpcionesCiclosConstanciaAcademica(){
+  const opciones=[];
+  for(let anio=2026;anio>=2003;anio--){
+    opciones.push(`<option value="${anio}-2">${anio}-2</option>`,`<option value="${anio}-1">${anio}-1</option>`,`<option value="${anio}-0">${anio}-0 (Verano)</option>`);
+  }
+  return `<option value="">Seleccione un ciclo académico</option>${opciones.join("")}`;
+}
+function crearCampoCicloConstanciaAcademica(n){
+  return `<div class="cicloConstanciaItem rounded-xl border border-gray-200 p-4" data-ciclo-item="${n}"><div class="flex items-center justify-between gap-3 mb-3"><label class="field-label mb-0" for="cicloConstancia${n}">Ciclo académico de la constancia ${n} *</label>${n>1?`<button type="button" onclick="eliminarCicloConstanciaAcademica(this)" class="text-sm font-bold text-red-600 hover:underline">Eliminar</button>`:""}</div><select id="cicloConstancia${n}" name="cicloConstancia${n}" class="field" required>${generarOpcionesCiclosConstanciaAcademica()}</select></div>`;
+}
+function agregarCicloConstanciaAcademica(){
+  const c=document.getElementById("ciclosConstanciaContainer");if(!c)return;
+  c.insertAdjacentHTML("beforeend",crearCampoCicloConstanciaAcademica(c.querySelectorAll(".cicloConstanciaItem").length+1));actualizarCostoConstanciasAcademicas();
+}
+function eliminarCicloConstanciaAcademica(btn){
+  const c=document.getElementById("ciclosConstanciaContainer");btn?.closest(".cicloConstanciaItem")?.remove();if(!c)return;
+  [...c.querySelectorAll(".cicloConstanciaItem")].forEach((item,i)=>{
+    const n=i+1,label=item.querySelector("label"),sel=item.querySelector("select"),oldBtn=item.querySelector("button");
+    item.dataset.cicloItem=String(n);if(label){label.htmlFor=`cicloConstancia${n}`;label.textContent=`Ciclo académico de la constancia ${n} *`;}
+    if(sel){sel.id=`cicloConstancia${n}`;sel.name=`cicloConstancia${n}`;}
+    if(n===1&&oldBtn)oldBtn.remove();
+    if(n>1&&!oldBtn)item.querySelector(".flex")?.insertAdjacentHTML("beforeend",`<button type="button" onclick="eliminarCicloConstanciaAcademica(this)" class="text-sm font-bold text-red-600 hover:underline">Eliminar</button>`);
+  });actualizarCostoConstanciasAcademicas();
+}
+function actualizarCostoConstanciasAcademicas(){
+  const tipo=document.getElementById("tipoConstanciaCaja")?.value||"",n=document.querySelectorAll("#ciclosConstanciaContainer .cicloConstanciaItem").length;
+  const tarifa=tipo==="constanciaRendimientoPromedio"?20:10,salida=document.getElementById("costoTotalConstanciasAcademicas"),label=document.getElementById("tarifaConstanciaAcademica");
+  if(salida)salida.textContent=`S/ ${(tarifa*Math.max(n,1)).toFixed(2)}`;if(label)label.textContent=`S/ ${tarifa.toFixed(2)} por constancia`;
+}
+function alternarOtroMotivoConstanciaAcademica(){
+  // Este desplegable administra su único campo «Otro»; no debe duplicarlo el inicializador genérico.
+  const mostrar=document.getElementById("motivoConstanciaCaja")?.value==="Otro",wrap=document.getElementById("otroMotivoConstanciaWrap"),input=document.getElementById("otroMotivoConstanciaCaja");
+  wrap?.classList.toggle("hidden",!mostrar);if(input){input.required=mostrar;if(!mostrar)input.value="";}
+}
+function actualizarCamposConstanciaAcademica(){
+  const tipo=document.getElementById("tipoConstanciaCaja")?.value||"",fields=document.getElementById("camposEspecificosConstanciaAcademica");
+  if(!fields)return;
+  if(!tipo){fields.innerHTML="";return;}
+  const tarifa=tipo==="constanciaRendimientoPromedio"?20:10;
+  const campoMotivo=`<div><label class="field-label" for="motivoConstanciaCaja">Motivo de la solicitud *</label><select id="motivoConstanciaCaja" name="motivoConstanciaCaja" class="field" required onchange="alternarOtroMotivoConstanciaAcademica()"><option value="">Seleccione un motivo</option><option value="Estudios">Estudios</option><option value="Laborales">Laborales</option><option value="Otro">Otro</option></select><div id="otroMotivoConstanciaWrap" class="hidden mt-3"><label class="field-label" for="otroMotivoConstanciaCaja">Especifique el motivo *</label><input id="otroMotivoConstanciaCaja" name="otroMotivoConstanciaCaja" class="field" type="text" maxlength="500" placeholder="Indique el motivo de su solicitud"></div></div>`;
+  if(tipo==="constanciaPromedio"||tipo==="constanciaCreditos"){
+    fields.innerHTML=`<section class="border-t border-gray-200 pt-6 space-y-5">${campoMotivo}<div class="rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo de la constancia</span><strong class="text-xl text-[var(--esan-red)]">S/ 10.00</strong></div></section>`;
+  }else{
+    fields.innerHTML=`<section class="border-t border-gray-200 pt-6 space-y-5">${campoMotivo}<div><div class="flex flex-wrap items-center justify-between gap-3 mb-3"><label class="field-label mb-0">Ciclo(s) académico(s) solicitado(s) *</label><button type="button" onclick="agregarCicloConstanciaAcademica()" class="rounded-xl border border-[var(--esan-red)] px-4 py-2 text-sm font-bold text-[var(--esan-red)] hover:bg-red-50">+ Agregar otro ciclo</button></div><div id="ciclosConstanciaContainer" class="space-y-3">${crearCampoCicloConstanciaAcademica(1)}</div><p class="helper mt-2">Cada ciclo seleccionado corresponde a una constancia independiente.</p></div><div class="rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><div><span class="block font-bold text-gray-700">Costo estimado total</span><span id="tarifaConstanciaAcademica" class="helper">S/ ${tarifa.toFixed(2)} por constancia</span></div><strong id="costoTotalConstanciasAcademicas" class="text-xl text-[var(--esan-red)]">S/ ${tarifa.toFixed(2)}</strong></div></section>`;
+  }
+  actualizarCostoConstanciasAcademicas();
+}
+function renderFormularioConstanciasAcademicas(tramite){
+  const carreraOptions=opcionesCarrerasHTML();
+  const header=`<div class="max-w-4xl mx-auto animate-[fadeIn_0.3s]"><button type="button" onclick="renderContent('home')" class="inline-flex items-center gap-2 text-sm font-bold text-[var(--esan-red)] hover:underline mb-5"><i data-lucide="arrow-left" class="w-4 h-4"></i>Volver a todos los trámites</button><section class="glass rounded-2xl p-6 sm:p-8 border-l-4 border-[var(--esan-red)] mb-6"><div class="flex items-start gap-4"><div class="w-14 h-14 rounded-2xl bg-red-50 text-[var(--esan-red)] flex items-center justify-center shrink-0"><i data-lucide="${tramite.icono}" class="w-7 h-7"></i></div><div><p class="text-xs uppercase tracking-[.2em] text-[var(--esan-red)] font-bold">Formulario de solicitud</p><h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">${tramite.nombre}</h2></div></div></section><div class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 text-sm text-blue-950 mb-6 space-y-3"><p>Estimado(a) estudiante:</p><p>Para solicitar la constancia de rendimiento académico, complete los datos solicitados en este formulario. Una vez enviada su solicitud, recibirá un ticket en su correo institucional para continuar con el proceso.</p><p class="font-bold">Importante</p><ul class="list-disc pl-5 space-y-1"><li>La constancia solo detallará la información de un ciclo, si requiere de otros ciclos adicionales se emitirá una constancia por cada ciclo solicitado. Considerar que el costo es por cada constancia emitida.</li><li>El plazo máximo para la emisión es de 7 días hábiles, contados a partir del envío del comprobante de pago.</li></ul><p class="font-bold">Antes de solicitar la constancia de rendimiento académico, deberá tener en cuenta los siguientes puntos:</p><ol class="list-decimal pl-5 space-y-1"><li>Las constancias de rendimiento académico se emiten en formato digital.</li><li>Deberá revisar los modelos de constancias a través del siguiente enlace: <a class="underline text-[var(--esan-red)] font-semibold" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/MODELOS_DE_CONSTANCIAS_DE_RENDIMIENTO_ACADEMICO.pdf">Ver modelos de constancias</a>.</li><li>Por medidas de seguridad, la constancia se enviará únicamente al correo institucional y al correo personal registrado en nuestra base de datos. En caso requiera actualizar su correo personal, deberá detallar la nueva dirección de e-mail y enviarnos la foto de su DNI para validar su identidad y proceder con el cambio solicitado.</li></ol></div>`;
+  document.getElementById("viewer").innerHTML=`${header}<form id="formularioCaja" class="glass rounded-2xl p-6 sm:p-8 space-y-6" novalidate onsubmit="event.preventDefault(); validarFormularioCaja('constanciasAcademicas');"><section><label class="field-label" for="tipoConstanciaCaja">Seleccione el tipo de constancia *</label><select id="tipoConstanciaCaja" name="tipoConstanciaCaja" class="field" required onchange="actualizarCamposConstanciaAcademica()"><option value="">Seleccione una constancia</option><option value="constanciaPromedio">Constancia de Promedio Ponderado Acumulado — S/ 10.00</option><option value="constanciaCreditos">Constancia de Número de Créditos Acumulados — S/ 10.00</option><option value="constanciaRendimientoFacultad">Constancia de Rendimiento Académico por Facultad — S/ 10.00</option><option value="constanciaRendimientoPromedio">Constancia de Rendimiento Académico y Promedio Ponderado — S/ 20.00</option></select></section><section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-5">Datos del estudiante</h3><div class="grid sm:grid-cols-2 gap-5"><div><label class="field-label" for="cajaCodigo">Código de estudiante *</label><input id="cajaCodigo" name="codigo" class="field bg-gray-100 cursor-not-allowed" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" required value="${atributoCodigoSesion()}" readonly aria-readonly="true"></div><div><label class="field-label" for="cajaCorreoInstitucional">Correo al que se enviará el ticket de solicitud</label><input id="cajaCorreoInstitucional" name="correoInstitucional" class="field bg-gray-100 cursor-not-allowed" type="email" readonly aria-readonly="true" placeholder="Se completará automáticamente con su código"><p class="helper">Se utilizará este correo institucional para enviar el ticket y las indicaciones para continuar con el proceso.</p></div><div class="sm:col-span-2"><label class="field-label" for="cajaNombre">Apellidos y nombres completos *</label><input id="cajaNombre" name="nombreCompleto" class="field uppercase" type="text" required placeholder="APELLIDOS Y NOMBRES" autocomplete="name"><p class="helper">Escriba sus datos en el orden indicado.</p></div><div class="sm:col-span-2"><label class="field-label" for="cajaCarrera">Carrera actual *</label><select id="cajaCarrera" name="carrera" class="field" required>${carreraOptions}</select></div></div></section><div id="camposEspecificosConstanciaAcademica"></div><section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-4">Declaraciones obligatorias</h3><div class="space-y-3"><label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" name="declaracionConsentimiento" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm leading-relaxed text-gray-700">Declaro que todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.</span></label><label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" name="declaracionFormulario" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm leading-relaxed text-gray-700">Declaro haber leído y completado conforme el presente formulario.</span></label></div></section><section class="border-t border-gray-200 pt-6 space-y-4"><button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-7 py-3.5 text-white font-bold shadow-lg"><i data-lucide="check-circle" class="w-5 h-5"></i>Validar solicitud</button><div id="estadoCaja" class="hidden rounded-xl border p-4 text-sm" aria-live="polite"></div></section></form></div>`;
+  document.getElementById("topTitle").textContent=tramite.nombre;actualizarMenuActivo(tramite.key);toggleMenu(false);
+  const code=document.getElementById("cajaCodigo");if(code){code.value=obtenerCodigoSesion();code.readOnly=true;code.classList.add("bg-gray-100","cursor-not-allowed");}
+  const email=document.getElementById("cajaCorreoInstitucional");if(email)email.value=code?.value.trim()?`${code.value.trim()}@ue.edu.pe`:"";
+  const name=document.getElementById("cajaNombre");name?.addEventListener("input",()=>{name.value=name.value.toLocaleUpperCase("es-PE");});
+  actualizarCamposConstanciaAcademica();lucide.createIcons();document.getElementById("viewer").scrollTop=0;
+}
+
+
+const CURSOS_SILABOS = ["ADMINISTRACIÓN DE RETRIBUCIONES Y COMPENSACIONES","ADMINISTRACIÓN Y GESTIÓN ORGANIZACIONAL","ÁLGEBRA LINEAL","ALGEBRA LINEAL I","ALGORITMOS Y ESTRUCTURA DE DATOS","ANÁLISIS DE COMPETITIVIDAD INTERNACIONAL","ANÁLISIS DE DATOS I","ANÁLISIS DE DATOS I (ING)","ANÁLISIS DE DATOS II","ANÁLISIS DE REGRESIÓN","ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS","ANÁLISIS ECONÓMICO DEL DERECHO","ANÁLISIS FENOMENOLÓGICO DE LA PERSONALIDAD","ANÁLISIS FINANCIERO PARA LAS CIENCIAS SOCIALES","ANÁLISIS FUNDAMENTAL Y TÉCNICO BURSÁTIL I","ANÁLISIS FUNDAMENTAL Y TÉCNICO BURSÁTIL II","ANALISIS MULTIVARIADO","ANÁLISIS MULTIVARIADO I","ANÁLISIS MULTIVARIADO II","ANÁLISIS Y DISEÑO DE ALGORITMOS","ANALISIS Y DISEÑO DE SISTEMAS","ANÁLISIS Y GESTIÓN DE RIESGOS","ANALÍTICA DE LA WEB","ARBITRAJE","ARGUMENTACIÓN Y LÓGICA JURÍDICA","ARQUITECTURA DE SOFTWARE Y SOLUCIONES","ARQUITECTURA DEL COMPUTADOR I","ASESORÍA DE TESIS I","ASESORÍA DE TESIS II","BASE DE DATOS","BEHAVIORAL DESING","BIG DATA ANALYTICS","BRANDING","CÁLCULO","CALCULO AVANZADO","CÁLCULO I","CÁLCULO II","CÁLCULO II (ECONOMÍA)","CALIDAD DE SOFTWARE","CANALES Y ESTRATEGIAS DE DISTRIBUCIÓN","CAPSTONE PROJECT","CAPSTONE PROJECT I","CERTIFICACIONES Y ESTÁNDARES DE SOSTENIBILIDAD CORPORATIVA","CFA TRAINING","CHATBOTS RAG PARA SERVICIO AL CLIENTE Y CALIDAD DE SERVICIO (QOS)","CIBERSEGURIDAD","CIENCIAS DEL SUELO","CLIMATE CHANGE","CLÍNICA INFANTO JUVENIL","COACHING","COGNICIONES SOCIALES","COMERCIO INTERNACIONAL","COMPORTAMIENTO DEL CONSUMIDOR","COMPORTAMIENTO HUMANO EN LAS ORGANIZACIONES","COMPUTACIÓN EN LA NUBE","COMPUTACIÓN GRÁFICA","COMUNICACIÓN Y LITERATURA I","COMUNICACIÓN Y LITERATURA II","COMUNICACIONES DE MARKETING","CONDUCTA FINANCIERA","CONSTRUCCIÓN Y ADAPTACIÓN DE PRUEBAS","CONTABILIDAD AVANZADA","CONTABILIDAD DE COSTOS","CONTABILIDAD DE GESTIÓN I","CONTABILIDAD DE GESTIÓN II","CONTABILIDAD FINANCIERA","CONTABILIDAD FINANCIERA I","CONTABILIDAD FINANCIERA II","CONTABILIDAD GENERAL","CONTRATACIÓN CON EL ESTADO","CONTRATACIÓN MERCANTIL","CONTRATACIONES PÚBLICAS MODERNAS (G2G, APP, OXL)","COSTEO Y ESTRATEGIAS DE PRECIOS","COSTOS Y PRESUPUESTOS","CREATIVIDAD PUBLICITARIA","CRECIMIENTO ENDÓGENO E INNOVACIÓN","CRECIMIENTO Y DESARROLLO ECONÓMICO SOSTENIBLE","CULTURA Y CLIMA ORGANIZACIONAL","CURSO DE EXTENSIÓN DE ECONOMÍA Y FINANZAS","DERECHO ADMINISTRATIVO I","DERECHO ADMINISTRATIVO II","DERECHO ADUANERO","DERECHO AMBIENTAL","DERECHO CIVIL - OBLIGACIONES","DERECHO CIVIL - REALES","DERECHO CIVIL ACTO JURÍDICO","DERECHO CIVIL CONTRATOS I","DERECHO CIVIL CONTRATOS II","DERECHO CIVIL FAMILIA Y SUCESIONES","DERECHO CIVIL PERSONAS","DERECHO CONCURSAL","DERECHO CONSTITUCIONAL","DERECHO DE LA COMPETENCIA Y LIBRE MERCADO","DERECHO DE LA PROPIEDAD INTELECTUAL","DERECHO DE LAS NUEVAS TECNOLOGÍAS","DERECHO EMPRESARIAL","DERECHO FINANCIERO Y BANCARIO","DERECHO INFORMÁTICO E INTELIGENCIA ARTIFICIAL","DERECHO INTERNACIONAL DE LOS DERECHOS HUMANOS (DIDH)","DERECHO INTERNACIONAL PRIVADO","DERECHO INTERNACIONAL PÚBLICO","DERECHO LABORAL EMPRESARIAL","DERECHO LABORAL GENERAL","DERECHO MEDIOAMBIENTAL","DERECHO MERCANTIL","DERECHO MINERO Y SOSTENIBILIDAD","DERECHO PENAL","DERECHO PENAL ECONÓMICO","DERECHO PROCESAL CIVIL I","DERECHO PROCESAL CIVIL II","DERECHO PROCESAL CONSTITUCIONAL","DERECHO PROCESAL PENAL","DERECHO REGULATORIO","DERECHO SOCIETARIO","DERECHO TRIBUTARIO","DERECHO TRIBUTARIO I","DERECHO Y LEGISLACIÓN AMBIENTAL","DERECHOS HUMANOS","DESARROLLO DE APLICACIONES MÓVILES","DESARROLLO DE APLICACIONES WEB","DESARROLLO DE SOLUCIONES DE IoT","DESPLIEGUE DE APLICACIONES","DIGITAL MARKETING Y COMERCIO EXTERIOR","DIRECCIÓN DE ADMINISTRACIÓN FINANCIERA","DIRECCIÓN ESTRATÉGICA DE MARKETING","DISEÑO DE INGENIERIA","DISEÑO DE INGENIERIA I","DISEÑO DE INGENIERIA II","DISEÑO DE PATRONES DE SOFTWARE","DISEÑO DE PLANTA","DISEÑO Y DESARROLLO DE PRODUCTOS","DISEÑO Y DESARROLLO DE PRODUCTOS DIGITALES","DISEÑO Y EVALUACIÓN DE PROYECTOS","DISFUNCIONES DEL COMPORTAMIENTO INDIVIDUAL","E-MARKETING","ECOLOGY, ENVIRONMENT AND SOCIAL RESPONSIBILITY","ECONOMETRIA","ECONOMIA AMBIENTAL Y DE RECURSOS NATURALES","ECONOMÍA DE LA REGULACIÓN Y LA COMPETENCIA","ECONOMÍA DEL BIENESTAR Y FINANZAS PÚBLICAS","ECONOMÍA FINANCIERA","ECONOMIA GENERAL","ECONOMÍA INTERNACIONAL","ECONOMÍA PARA INGENIERÍA","ECONOMÍA PERUANA EN LA ERA MODERNA","ECONOMÍA Y MEDIO AMBIENTE","EMPRESA SOCIAL","EMPRENDIMIENTOS DE MODELO DE NEGOCIO A LA EMPRESA","EMPRENDIMIENTOS FAMILIARES INNOVADORES","ENDOMARKETING","ENTREPRENEURSHIP","ESCRITURA Y NARRATIVA ESTRATÉGICA PARA LA COMUNICACIÓN","ESTADÍSTICA I","ESTADÍSTICA II","ESTADÍSTICA INFERENCIAL","ESTADÍSTICA INFERENCIAL PARA ECONOMISTAS","ESTADÍSTICA UNIVARIADA","ESTADÍSTICA Y PROBABILIDADES","ESTÁTICA","ESTRATEGIA DE GESTIÓN DEL POTENCIAL HUMANO","ESTRATEGIA JUDICIAL","ESTRATEGIAS DE ENTRADA A MERCADOS INTERNACIONALES","ESTRATEGIAS DE INTEGRACIÓN COMERCIAL","ESTRATEGIAS DE MARKETING DIGITAL. E-BRANDING","ESTRATEGIAS DE SEGMENTACIÓN Y POSICIONAMIENTO","ESTRATEGIAS DE TRANSPORTE Y DISTRIBUCIÓN","ESTUDIO DEL IMPACTO AMBIENTAL","ETHICAL HACKING Y SEGURIDAD","ÉTICA Y DEONTOLOGÍA PSICOLÓGICA","ÉTICA Y RESPONSABILIDAD AMBIENTAL","ÉTICA Y RESPONSABILIDAD PROFESIONAL","ÉTICA Y RESPONSABILIDAD SOCIAL EMPRESARIAL PARA FINANZAS","EVALUACIÓN DE CONFLICTOS Y DESARROLLO DE EQUIPOS","EVALUACIÓN DEL DESEMPEÑO","EVALUACIÓN DEL IMPACTO AMBIENTAL","EVALUACIÓN PSICOLÓGICA Y PRUEBAS ORGANIZACIONALES","EVALUACIÓN Y GESTIÓN DEL RENDIMIENTO","FAMILIA: MODELOS TEÓRICOS Y ÁREAS DE INTERVENCIÓN","FASHION AND LUXURY MARKETING","FILOSOFÍA DEL DERECHO","FILOSOFÍA Y ÉTICA","FINANCIAL MARKETS","FINANZAS CORPORATIVAS","FINANZAS CUANTITATIVAS CON PYTHON","FINANZAS I","FINANZAS II","FINANZAS III","FINANZAS INTERNACIONALES","FINANZAS PARA INGENIERÍA","FINANZAS PARA INGENIERÍA I","FINANZAS PARA INGENIERÍA II","FINANZAS PERSONALES","FINANZAS SOSTENIBLES","FÍSICA I","FÍSICA II","FORMULACIÓN Y EVALUACIÓN DE PROYECTOS","FROM LIMA TO THE WORLD: DISCOVERING HOW IT TRANSFORMS BUSINESS","FUNDAMENTALS OF VIBE CODING","FUNDAMENTOS DE BANCA Y BOLSA DE VALORES","FUNDAMENTOS DE CIENCIA DE DATOS","FUNDAMENTOS DE CONTABILIDAD","FUNDAMENTOS DE DIPLOMACIA Y RELACIONES INTERNACIONALES","FUNDAMENTOS DE ECONOMÍA","FUNDAMENTOS DE ECONOMÍA Y MANAGEMENT","FUNDAMENTOS DE GESTIÓN DE PROYECTOS","FUNDAMENTOS DE INTELIGENCIA ARTIFICIAL","FUNDAMENTOS DE LOS NEGOCIOS INTERNACIONALES","FUNDAMENTOS DE MARKETING","FUNDAMENTOS DE PROGRAMACIÓN","FUNDAMENTOS PARA LA INTERVENCIÓN COGNITIVO CONDUCTUAL Y CONTEXTUAL","FUSIONES Y ADQUISICIONES","GARANTÍAS CIVILES Y COMERCIALES","GEOGRAPHIC INFORMATION SYSTEM","GERENCIA DE OPERACIONES","GERENCIA PARA INGENIERÍA","GESTIÓN ADUANERA","GESTIÓN DE ALMACENES Y CENTROS DE DISTRIBUCIÓN","GESTIÓN DE DESASTRES Y CAMBIO CLIMÁTICO","GESTIÓN DE LA DIVERSIDAD Y BIENESTAR DE LOS EMPLEADOS","GESTIÓN DE LA ENERGÍA, HIDROCARBUROS Y MINERÍA","GESTIÓN DE LA POLÍTICA COMERCIAL Y ACCESO A MERCADOS","GESTIÓN DE LOGISTICA Y OPERACIONES","GESTIÓN DE NEGOCIOS PARA EMPRESAS INTERNACIONALES","GESTIÓN DE OPERACIONES","GESTION DE PROYECTOS DE LANZAMIENTO DE PRODUCTOS","GESTIÓN DE RESIDUOS SÓLIDOS","GESTIÓN DE VENTAS","GESTIÓN DEL CAPITAL HUMANO","GESTIÓN DEL COMERCIO INTERNACIONAL","GESTIÓN FINANCIERA","GESTIÓN PÚBLICA Y DESCENTRALIZACION","GESTIÓN Y ANÁLISIS DE PUESTOS","GLOBAL ENVIRONMENT","GLOBAL MARKETING","GLOBAL SUPPLY CHAIN MANAGEMENT","GLOBALIZACIÓN Y REALIDAD NACIONAL","HABILIDADES COMUNICACIONALES PARA EL DISEÑO DEL PROYECTO PROFESIONAL","HIDROLOGÍA","HIDROLOGÍA AMBIENTAL","HISTORIA DEL DERECHO","HISTORIA DEL PENSAMIENTO ECONÓMICO","HUMAN CENTERED DESIGN","IA GENERATIVA PARA LA TOMA DE DECISIONES","IA GENERATIVA PARA NEGOCIOS","INBOUND MARKETING","INGENIERÍA DE MATERIALES","INGENIERÍA DE PROCESOS","INGENIERÍA DE PROCESOS DE NEGOCIOS","INGENIERÍA DE REQUERIMIENTOS","INGENIERÍA DE SOFTWARE I","INGLÉS JURÍDICO","INSTRUMENTOS FINANCIEROS","INTEGRACIÓN E INGENIERÍA DE DATOS","INTELIGENCIA ARTIFICIAL","INTELIGENCIA DE NEGOCIOS","INTELIGENCIA DE NEGOCIOS APLICADA","INTELLIGENT ORGANIZATIONS AND KNOWLEDGE MANAGEMENT","INTERCULTURAL MANAGEMENT FOR INTERNATIONAL BUSINESS","INTERCULTURALIDAD, DIVERSIDAD Y PSICOLOGÍA","INTERNATIONAL NEGOTIATION","INTERVENCIÓN PSICOLÓGICA EN EMERGENCIAS Y DESASTRES","INTERVENCIÓN Y CONSEJERÍA EN CONTEXTOS EDUCATIVOS","INTRODUCCIÓN A LA INGENIERÍA INDUSTRIAL Y COMERCIAL","INTRODUCCIÓN A LAS CIENCIAS DE LA COMUNICACIÓN","INTRODUCCIÓN AL CÁLCULO ESTOCÁSTICO PARA FINANZAS","INTRODUCCIÓN AL DERECHO","INVESTIGACIÓN CUALITATIVA","INVESTIGACIÓN CUALITATIVA DE MERCADOS","INVESTIGACIÓN CUANTITATIVA","INVESTIGACIÓN CUANTITATIVA CON MODELOS MULTIVARIADOS","INVESTIGACIÓN CUANTITATIVA DE MERCADOS","INVESTIGACIÓN DE CONSUMER INSIGHTS","INVESTIGACIÓN DE MERCADOS INTERNACIONALES","INVESTIGACIÓN DE OPERACIONES","INVESTIGACIÓN OPERATIVA I","INVESTIGACIÓN OPERATIVA II","INVESTMENT ANALYSIS","INVESTMENT PROJECT EVALUATION","LEADERSHIP","LEADERSHIP AND PEOPLE MANAGEMENT","LENGUAJE GRÁFICO Y AUDIOVISUAL","LIDERAZGO POSITIVO","LITIGACIÓN ORAL","LITIGACIÓN ORAL Y ESTRATEGIA JUDICIAL","MACHINE LEARNING","MACHINE LEARNING APLICADO A LA BANCA","MACHINE LEARNING MODELS DESIGN","MACHINE LEARNING Y PYTHON PARA NEGOCIOS","MACROECONOMETRÍA","MACROECONOMÍA","MACROECONOMÍA I","MACROECONOMÍA II","MANAGEMENT COMPETENCIES","MANAGEMENT INFORMATION SYSTEM","MANAGEMENT STRATEGY","MANEJO AMBIENTAL DE CUENCAS","MARKETING DE SERVICIOS Y RETAIL","MARKETING DIGITAL Y COMERCIO ELECTRÓNICO","MARKETING ESTRATÉGICO INTERNACIONAL","MARKETING EXPERIENCIAL","MARKETING INDUSTRIAL Y SECTORIAL","MARKETING PARA INGENIERÍA","MARKETING POLÍTICO","MARKETING TURÍSTICO","MATEMATICA DISCRETA","MATEMÁTICA PARA CIENCIAS SOCIALES","MATEMATICA PARA ECONOMISTAS","MERCADO DE VALORES","MERCADOS LABORALES: LA ECONOMÍA DE DISCRIMINACIÓN","MERGERS & ACQUISITIONS: FINANCIAL & PROCESS PERSPECTIVE","METEOROLOGÍA Y CLIMATOLOGÍA","METODOLOGÍA DE LA INVESTIGACIÓN","METODOLOGÍA DE LA INVESTIGACIÓN JURÍDICA","MÉTODOS DE OPTIMIZACIÓN DINÁMICO","MÉTODOS ECONOMÉTRICOS","MICROECONOMÍA","MICROECONOMÍA I","MICROECONOMÍA II","MINERÍA DE DATOS","MINERÍA DE DATOS AVANZADO","MINERÍA DE DATOS Y MACHINE LEARNING PARA ECONOMISTAS","MODELOS DE GESTIÓN ORGANIZACIONAL","MONITOREO Y GESTIÓN DE LA CALIDAD ATMOSFÉRICA Y ACÚSTICA","MONITOREO Y GESTIÓN DE LA CALIDAD DEL AGUA Y SUELO","NEGOCIOS AMBIENTALES","NEUROCIENCIAS","NEUROCIENCIAS I","NEUROCIENCIAS II","NEUROMARKETING","OPERACIONES Y PROCESOS EN INGENIERÍA AMBIENTAL","OPERACIONES Y PROCESOS EN LA INGENIERÍA AMBIENTAL I","OPERATIONS AND SUPPLY CHAIN MANAGEMENT I","OPERATIONS AND SUPPLY CHAIN MANAGEMENT II","OPERATIVIDAD ADUANERA","OPTIMIZACIÓN DE LOS PROCESOS INDUSTRIALES","ORATORIA ACADÉMICA","ORDENAMIENTO TERRITORIAL","ORGANIZACIÓN INDUSTRIAL","ORGANIZATIONAL THEATER: SEÑALES, SIMBOLISMOS Y ESTRATEGIAS DE GESTIÓN EN LA ERA DE LA HIPER-VISIBILIDAD","PENSAMIENTO CRÍTICO","PERCEPCIÓN Y COMUNICACIÓN","PLAN DE NEGOCIOS INTERNACIONALES","PLANEACIÓN ESTRATÉGICA","PLANEAMIENTO ESTRATÉGICO (PSICOLOGÍA)","PLANEAMIENTO ESTRATÉGICO (ELECTIVO)","PLANEAMIENTO ESTRATÉGICO DE TI","PLANEAMIENTO Y CONTROL DE LA PRODUCCIÓN","PLANIFICACIÓN FINANCIERA","POLÍTICA ECONÓMICA APLICADA","POLITICS AND INTERNATIONAL RELATIONS","POSITIVE AND HEALTH PSYCHOLOGY","PRE CÁLCULO","PRECIOS DE TRANSFERENCIA","PRINCIPIOS DE EVALUACIÓN Y PRUEBAS PSICOLÓGICAS","PRINCIPIOS DE EVALUACIÓN, PRUEBAS DE INTELIGENCIA Y PROCESOS COGNITIVOS","PRIVATIZACIÓN Y ASOCIACIONES PÚBLICO PRIVADAS","PROCESO CONTENCIOSO ADMINISTRATIVO","PROCESOS CREATIVOS","PROCESOS DE FABRICACIÓN","PROCESOS DE FABRICACIÓN DIGITAL","PROCESOS ECONÓMICOS DEL PERÚ Y AMÉRICA LATINA","PROCESOS PSICOPATOLÓGICOS","PRODUCT ENGINEERING","PROGRAMACIÓN II","PROGRAMACIÓN ORIENTADA A OBJETOS","PROGRAMACIÓN PARA CIENCIA DE DATOS","PROGRAMACIÓN PARA REALIDAD AUMENTADA","PROGRAMAS DE PROMOCIÓN Y PREVENCIÓN PARA EL BIENESTAR HUMANO","PROJECT MANAGEMENT","PROJECT MANAGEMENT & AGILE","PROYECTO INTERDISCIPLINARIO I","PROYECTO STARTUP","PRUEBA DE SOFTWARE","PRUEBAS DE PERSONALIDAD Y CONSTRUCTOS DEL YO","PSICODINÁMICA DE LAS ORGANIZACIONES","PSICOLOGÍA CLÍNICA","PSICOLOGÍA COGNITIVA Y DEL APRENDIZAJE","PSICOLOGÍA DE LA PERSONALIDAD","PSICOLOGÍA DEL DESARROLLO HUMANO I","PSICOLOGÍA DEL DESARROLLO HUMANO II","PSICOLOGÍA EDUCATIVA","PSICOLOGÍA HUMANISTA Y EXISTENCIALISTA","PSICOLOGÍA ORGANIZACIONAL","PSICOLOGÍA SOCIAL","PUBLIC RELATIONS AND ORGANIZATIONAL COMMUNICATIONS","PUBLICIDAD Y PROMOCIÓN DE VENTAS","PUBLICIDAD, FERIAS Y MISIONES COMERCIALES","QUALITY MANAGEMENT AND CUSTOMER SERVICES","QUÍMICA AMBIENTAL","QUÍMICA I","QUÍMICA II","QUÍMICA ORGÁNICA Y AMBIENTAL","RECLUTAMIENTO Y SELECCIÓN DEL TALENTO HUMANO","REDACCIÓN ACADÉMICA","REDACCIÓN JURÍDICA","REDES DE COMUNICACIONES","RESISTENCIA DE MATERIALES","RESOLUCIÓN DE CONFLICTOS SOCIALES Y AMBIENTALES","RESPONSABILIDAD CONTRACTUAL Y EXTRACONTRACTUAL","RESPONSABILIDAD SOCIAL CORPORATIVA","RIESGO DE CRÉDITO Y RIESGO OPERACIONAL","RIESGO DE MERCADO Y BASILEA","ROBÓTICA","SALUD MENTAL COMUNITARIA, CONSEJERÍA E INTERVENCIÓN PSICOLÓGICA","SEGURIDAD INDUSTRIAL Y PREVENCIÓN DE RIESGOS","SEMINARIO DE COMPETENCIAS GERENCIALES","SEMIÓTICA","SHOPPER MARKETING","SIMULACIÓN DE PROCESOS","SISTEMAS DE GESTIÓN DE BASES DE DATOS","SISTEMAS DE GESTIÓN INTEGRAL DE RIESGOS APLICADOS: ISO 31000","SISTEMAS DE INFORMACIÓN","SISTEMAS OPERATIVOS I","SISTEMAS RESILIENTES: ‘ENFOQUE INTERDISCIPLINARIO PARA ORGANIZACIONES, LOGÍSTICA Y CADENAS DE SUMINISTRO’","SOCIAL MEDIA MARKETING","SOFTWARE FACTORY & GESTIÓN DE PROYECTOS ÁGILES","STRATEGIC PLANNING FOR ENGINEERING","SUSTAINABLE MARKETING STRATEGIES","TALLER DE AUDIO Y VIDEO","TALLER DE DISEÑO GRÁFICO I","TALLER DE DISEÑO GRÁFICO II","TALLER DE DISEÑO GRÁFICO PUBLICITARIO","TALLER DE FOTOGRAFÍA","TALLER: DESARROLLO DE COMPETENCIAS PERSONALES I","TALLER: DESARROLLO DE COMPETENCIAS PERSONALES II","TALLER: DESARROLLO DE COMPETENCIAS PERSONALES III","TALLER: DESARROLLO DE COMPETENCIAS PERSONALES IV","TALLER: DESARROLLO DE COMPETENCIAS PERSONALES V","TALLER: DESARROLLO DE COMPETENCIAS PROFESIONALES I","TALLER: DESARROLLO DE COMPETENCIAS PROFESIONALES II","TALLER: DESARROLLO DE COMPETENCIAS PROFESIONALES III","TALLER: DESARROLLO DE COMPETENCIAS PROFESIONALES IV","TALLER: DESARROLLO DE COMPETENCIAS PROFESIONALES V","TECHNOLOGICAL ENTREPRENEURSHIP","TÉCNICA CONTRACTUAL CIVIL Y MERCANTIL","TÉCNICAS DE OBSERVACIÓN Y ENTREVISTA PSICOLÓGICA","TECNOLOGÍAS DE INFORMACIÓN PARA FINANZAS","TECNOLOGÍAS IIOT PARA SISTEMAS INDUSTRIALES","TECNOLOGÍAS PARA LA GESTIÓN AMBIENTAL AIRE, AGUA Y SUELO","TEORÍA DE LAS RELACIONES INTERNACIONALES","TEORÍA FINANCIERA","TEORÍA MONETARIA","TEORÍA Y DISEÑO ORGANIZACIONAL","TEORÍAS DE LA MOTIVACIÓN Y EMOCIÓN","TEORIAS PSICODINÁMICAS","TERMODINAMICA","TOPICS OF FINANCE","TRABAJO DE TESIS I (AMBIENTAL)","TRABAJO DE TESIS I (PSICOLOGÍA)","TRABAJO DE TESIS I (INDUSTRIAL)","TRABAJO DE TESIS I (ITIS)","TRABAJO DE TESIS I (MARKETING)","TRABAJO DE TESIS I (FINANZAS)","TRABAJO DE TESIS I (ECONOMÍA)","TRABAJO DE TESIS II (AMBIENTAL)","TRABAJO DE TESIS II (ITIS)","TRABAJO DE TESIS II (PSICOLOGÍA)","TRABAJO DE TESIS II (MARKETING)","TRABAJO DE TESIS II (INDUSTRIAL)","TRABAJO DE TESIS II","TRABAJO DE TESIS II (FINANZAS)","TRABAJO DE TESIS II (ECONOMÍA)","TRATAMIENTO DE AGUAS RESIDUALES","TRIBUTACIÓN EMPRESARIAL I","TRIBUTACIÓN EMPRESARIAL II","UX/UI","VALORACIÓN DE ACTIVOS EN RENTA FIJA Y RENTA VARIABLE","VISUALIZACIÓN DE DATOS","OTRO"];
+
 function renderFormularioCaja(tramite){
   const key=tramite.key;
+  if(key==="constanciasAcademicas"){renderFormularioConstanciasAcademicas(tramite);return;}
   const carreraOptions=opcionesCarrerasHTML();
   const cicloOptions=Array.from({length:(2026-2003)*2+2},(_,i)=>{
     const year=2003+Math.floor(i/2), sem=(i%2)+1; return `${year}-${sem}`;
@@ -1961,77 +2156,241 @@ function renderFormularioCaja(tramite){
   const motivosRendimiento=["ESTUDIOS","LABORALES"];
   const declConsentimiento="Declaro que todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.";
   const header=`<div class="max-w-4xl mx-auto animate-[fadeIn_0.3s]"><button type="button" onclick="renderContent('home')" class="inline-flex items-center gap-2 text-sm font-bold text-[var(--esan-red)] hover:underline mb-5"><i data-lucide="arrow-left" class="w-4 h-4"></i>Volver a todos los trámites</button><section class="glass rounded-2xl p-6 sm:p-8 border-l-4 border-[var(--esan-red)] mb-6"><div class="flex items-start gap-4"><div class="w-14 h-14 rounded-2xl bg-red-50 text-[var(--esan-red)] flex items-center justify-center shrink-0"><i data-lucide="${tramite.icono}" class="w-7 h-7"></i></div><div><p class="text-xs uppercase tracking-[.2em] text-[var(--esan-red)] font-bold">Formulario de solicitud</p><h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">${tramite.nombre}</h2><p class="text-sm text-gray-500 mt-2">Completa los campos y revisa los requisitos antes de continuar.</p></div></div></section>`;
-  const student=`<section><h3 class="text-lg font-extrabold text-gray-900 mb-5">Datos del estudiante</h3><div class="grid sm:grid-cols-2 gap-5"><div><label class="field-label" for="cajaCodigo">Código de estudiante</label><!-- Código heredado de la sesión. No se pide de nuevo ni se permite editarlo aquí. -->
-<input id="cajaCodigo" class="field bg-gray-100 cursor-not-allowed" type="text" inputmode="numeric" maxlength="8" required value="${atributoCodigoSesion()}" readonly aria-readonly="true"></div><div><label class="field-label" for="cajaNombre">Apellidos y nombres completos</label><input id="cajaNombre" class="field uppercase" type="text" required placeholder="APELLIDOS Y NOMBRES"></div><div class="sm:col-span-2"><label class="field-label" for="cajaCarrera">Carrera actual</label><select id="cajaCarrera" class="field" required>${carreraOptions}</select></div></div></section>`;
-  let fields="", declarations="", extraInfo="", fixedCost=null;
+  // =====================================================================
+  // >>>>>>>>>>>>>>>>>>> AQUI CAMBIAR EL CICLO <<<<<<<<<<<<<<<<<<<<<<<<<<<
+  // PARA EL SIGUIENTE PERIODO, BUSQUE EL CAMPO id="cajaCiclo" EN LA
+  // PLANTILLA DE ABAJO Y CAMBIE SOLAMENTE value="2026-2" POR EL NUEVO
+  // CICLO (POR EJEMPLO: value="2027-1"). NO CAMBIE EL id NI EL name.
+  // =====================================================================
+  const student=key==="examenRezagados"?`<section><h3 class="text-lg font-extrabold text-gray-900 mb-5">DATOS DEL ESTUDIANTE</h3><div class="grid sm:grid-cols-2 gap-5"><div><label class="field-label" for="cajaCodigo">CÓDIGO DE ESTUDIANTE</label><!-- Código heredado de la sesión. No se pide de nuevo ni se permite editarlo aquí. -->
+<input id="cajaCodigo" name="codigoEstudiante" class="field bg-gray-100 cursor-not-allowed" type="text" inputmode="numeric" maxlength="8" required value="${atributoCodigoSesion()}" readonly aria-readonly="true"></div><div><label class="field-label" for="cajaCorreo">CORREO INSTITUCIONAL</label><input id="cajaCorreo" name="correoInstitucional" class="field bg-gray-100 cursor-not-allowed" type="email" required value="${atributoCodigoSesion()}@ue.edu.pe" readonly aria-readonly="true"><p class="helper">EL TICKET Y LAS INDICACIONES SE ENVIARÁN A ESTE CORREO.</p></div><div><label class="field-label" for="cajaNombre">APELLIDOS Y NOMBRES COMPLETOS</label><input id="cajaNombre" name="apellidosNombres" class="field uppercase" type="text" required placeholder="APELLIDOS Y NOMBRES" autocomplete="name"></div><div><label class="field-label" for="cajaCiclo">CICLO INSCRITO</label><!-- CAMBIAR EL VALUE DE ESTE CAMPO AL INICIAR EL SIGUIENTE CICLO ACADÉMICO. --> <input id="cajaCiclo" name="cicloAcademico" class="field bg-gray-100 cursor-not-allowed" type="text" value="2026-2" readonly aria-readonly="true" required><p class="helper">CICLO PREDEFINIDO. NO LO MODIFIQUE.</p></div><div class="sm:col-span-2"><label class="field-label" for="cajaCarrera">CARRERA ACTUAL</label><select id="cajaCarrera" name="carreraActual" class="field" required>${carreraOptions}</select></div></div></section>`:`<section><h3 class="text-lg font-extrabold text-gray-900 mb-5">DATOS DEL ESTUDIANTE</h3><div class="grid sm:grid-cols-2 gap-5"><div><label class="field-label" for="cajaCodigo">CÓDIGO DE ESTUDIANTE</label><!-- Código heredado de la sesión. No se pide de nuevo ni se permite editarlo aquí. -->
+<input id="cajaCodigo" name="codigoEstudiante" class="field bg-gray-100 cursor-not-allowed" type="text" inputmode="numeric" maxlength="8" required value="${atributoCodigoSesion()}" readonly aria-readonly="true"></div><div><label class="field-label" for="cajaCorreo">CORREO INSTITUCIONAL</label><input id="cajaCorreo" name="correoInstitucional" class="field bg-gray-100 cursor-not-allowed" type="email" required value="${atributoCodigoSesion()}@ue.edu.pe" readonly aria-readonly="true"><p class="helper">EL TICKET Y LAS INDICACIONES SE ENVIARÁN A ESTE CORREO.</p></div><div><label class="field-label" for="cajaNombre">APELLIDOS Y NOMBRES COMPLETOS</label><input id="cajaNombre" name="apellidosNombres" class="field uppercase" type="text" required placeholder="APELLIDOS Y NOMBRES" autocomplete="name"></div><div class="sm:col-span-2"><label class="field-label" for="cajaCarrera">CARRERA ACTUAL</label><select id="cajaCarrera" name="carreraActual" class="field" required>${carreraOptions}</select></div></div></section>`;
+  let fields="", declarations="", extraInfo="", introInfo="", fixedCost=null;
 
   // CAJA — SOLICITUD DE EXAMEN DE REZAGADOS
+    // ARCHIVO QUE DEBE PUBLICARSE JUNTO AL HTML (NO MOSTRAR ESTE NOMBRE EN LA PÁGINA): formato_solicitud_examen_rezagados.docx.
   if(key==="examenRezagados"){
-    fixedCost=100;
-    fields=`<section class="border-t border-gray-200 pt-6"><div class="grid sm:grid-cols-2 gap-5"><div><label class="field-label" for="cajaCiclo">Ciclo actual inscrito</label><select id="cajaCiclo" class="field" required><option value="2026-2" selected>2026-2</option></select></div><div><label class="field-label" for="cantidadExamenes">Cantidad de evaluaciones</label><input id="cantidadExamenes" class="field" type="number" min="1" value="1" readonly></div></div><div class="mt-6"><div class="flex flex-wrap items-center justify-between gap-3"><h3 class="text-lg font-extrabold text-gray-900">Evaluaciones a solicitar</h3><button type="button" onclick="agregarBloqueExamenRezagado()" class="rounded-xl border border-[var(--esan-red)] px-4 py-2 text-sm font-bold text-[var(--esan-red)]">+ Agregar otro examen</button></div><div id="bloquesExamenRezagado" class="space-y-5 mt-4">${crearBloqueExamenRezagado(1)}</div><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo total estimado</span><strong id="costoExamenes" class="text-xl text-[var(--esan-red)]">S/ 100.00</strong></div></div></section>`;
-    declarations=["Todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.","Declaro que, si no adjunto el documento de sustento y/o no registro el pago correspondiente por curso, mi solicitud podría no proceder, sin lugar a reclamo.","Declaro haber leído el artículo 83 del Reglamento de Estudios de Pregrado sobre exámenes de rezagados."].map((d,i)=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm leading-relaxed text-gray-700">${d}${i===2?' <a class="underline text-[var(--esan-red)]" target="_blank" rel="noopener" href="https://secretariageneral.esan.edu.pe/images/documentos/Reglamentos/Reglam_Estudios_de_Pregrado_29.01.2025.pdf">Ver reglamento</a>':''}</span></label>`).join("");
-    extraInfo=`<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950"><strong>Importante:</strong> el costo es de S/ 100 por cada evaluación. Adjunta el sustento correspondiente en cada bloque cuando aplique. El comprobante de pago se registrará posteriormente mediante el formulario común de Caja.</div>`;
+    fixedCost=null;
+    introInfo=`<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 text-sm text-blue-950 mb-6 space-y-3">
+      <p class="font-extrabold text-base">SOLICITUD DE EVALUACIÓN DE REZAGADOS</p>
+      <p>Estimado(a) estudiante:</p>
+      <p>Para solicitar una evaluación de rezagados, complete el presente formulario y adjunte el formato de solicitud correspondiente a cada curso.</p>
+      <p>Puede registrar uno o varios cursos en un solo formulario. Seleccione <strong>AGREGAR OTRO CURSO</strong> para incluir evaluaciones adicionales.</p>
+      <p>Las fechas programadas para rendir las evaluaciones de rezagados son el <strong>07 y el 10 de diciembre</strong>, en modalidad <strong>PRESENCIAL</strong>, de conformidad con el Calendario Académico. <a class="underline font-semibold" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/index.php/servicios-academicos/informacion-academica/calendario-academico">CONSULTAR CALENDARIO ACADÉMICO</a>.</p>
+      <p>Los alumnos podrán solicitar la recuperación de cualquier evaluación que no hayan rendido, con excepción de la presentación de trabajos u otro tipo de evaluación que no tenga características de examen. Solo se permite recuperar una nota.</p>
+      <p><strong>Artículo 83°:</strong> “Solamente en casos excepcionales, el alumno que no rindió alguna evaluación y que haya justificado debidamente su inasistencia, podrá rendir una evaluación de rezagados para reemplazar la nota faltante. Los alumnos que por razones de excepción debidamente comprobadas sean autorizados a rendir la evaluación de rezagados lo harán en la fecha y realizando el pago correspondiente según las condiciones que se establezcan.”</p>
+      <p>Para realizar el trámite, deberá contar con la documentación sustentatoria que justifique su solicitud. El resultado de la solicitud (procedente o improcedente) y el horario, para los alumnos autorizados, se comunicarán hasta un día antes de la evaluación mediante el correo institucional y se publicarán en UE Virtual.</p>
+      <p>La evaluación de rezagados comprende todo el contenido del curso. No puede sustituir un trabajo de investigación u otra evaluación que no tenga características de examen, ni reemplazar la nota cero (00) obtenida por falta de probidad, de conformidad con el Artículo 84° del Reglamento de Estudios.</p>
+    </div>`;
+    // ARCHIVO DESCARGABLE QUE DEBE PUBLICARSE JUNTO AL HTML (NO MOSTRAR ESTE NOMBRE EN LA PÁGINA): formato_solicitud_examen_rezagados.docx.
+    fields=`<section class="border-t border-gray-200 pt-6 space-y-6">
+      <div>
+        <div class="flex flex-wrap items-center justify-between gap-3"><h3 class="text-lg font-extrabold text-gray-900">CURSO(S) Y EVALUACIÓN(ES) A SOLICITAR</h3><button type="button" onclick="agregarBloqueExamenRezagado()" class="rounded-xl border border-[var(--esan-red)] px-4 py-2 text-sm font-bold text-[var(--esan-red)] hover:bg-red-50">+ AGREGAR OTRO EXAMEN DE REZAGADOS</button></div>
+        <p class="helper mt-2">COMPLETE UN BLOQUE POR CADA CURSO. DEBE ADJUNTAR UN FORMATO DE SOLICITUD EN PDF POR CADA CURSO. LOS DATOS DEL ESTUDIANTE SE INGRESAN UNA SOLA VEZ.</p>
+        <div id="bloquesExamenRezagado" class="space-y-5 mt-4">${crearBloqueExamenRezagado(1)}</div>
+      </div>
+    </section>`;
+    declarations=[
+      "Declaro que, todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.",
+      "Declaro que, si no adjunto el formato de solicitud correspondiente a cada curso o mi solicitud no procede, no tendré derecho a reclamo.",
+      "Declaro haber leído en el reglamento de estudios referente a la evaluación de rezagados Art.83."
+    ].map((d,i)=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" name="declaracionRezagados${i+1}" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm leading-relaxed text-gray-700">${d}${i===2?' <a class="underline text-[var(--esan-red)] font-semibold" target="_blank" rel="noopener" href="https://secretariageneral.esan.edu.pe/images/documentos/Reglamentos/Reglam_Estudios_de_Pregrado_29.01.2025.pdf">LEER REGLAMENTO DE ESTUDIOS</a>':''}</span></label>`).join("");
+    extraInfo=``;
   // CAJA — SOLICITUD DE EMISIÓN DE SÍLABOS
   } else if(key==="emisionSilabos"){
-    fields=`<section class="border-t border-gray-200 pt-6"><div class="mb-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950"><p class="font-bold">Antes de solicitar</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Solo se emiten sílabos de cursos aprobados; no se incluyen cursos desaprobados ni convalidados.</li><li>Los nombres deben escribirse tal como figuran en el histórico de notas del Portal Académico (Académico / Histórico).</li><li>Si solicita los sílabos de todos sus cursos aprobados, no necesita detallar los nombres; indique únicamente la cantidad.</li><li>El plazo máximo es de 7 días hábiles, contados desde el día siguiente del envío del comprobante de pago.</li></ul></div><div><label class="field-label" for="motivoSilabo">Motivo de la solicitud</label><select id="motivoSilabo" class="field" required><option value="">Seleccione un motivo</option><option>TRABAJO</option><option>ESTUDIOS</option><option>PERSONALES</option></select></div><div class="mt-5"><label class="field-label" for="cantidadSilabos">Cantidad de sílabos solicitados</label><input id="cantidadSilabos" class="field" type="number" min="1" step="1" required value="4" oninput="actualizarCostoSilabos()"><p class="helper">Costo: S/ 10.00 por cada sílabo.</p></div><div class="mt-5"><label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input id="todosSilabos" type="checkbox" class="mt-1 accent-red-600" onchange="alternarTodosSilabos()"><span class="text-sm text-gray-700">Solicito los sílabos de <strong>todos</strong> los cursos aprobados. No es necesario detallar los nombres; solo indicar la cantidad.</span></label></div><div id="nombresSilabos" class="mt-5"><p class="font-bold text-gray-900 mb-3">Nombres de los cursos (si corresponde)</p><div class="space-y-3">${[1,2,3,4].map(i=>`<div><label class="field-label" for="silaboCurso${i}">${i}.</label><input id="silaboCurso${i}" class="field nombreCursoSilabo" type="text" placeholder="Nombre exacto del curso"></div>`).join("")}</div><p class="helper mt-2">Puedes dejar líneas en blanco si solicitas menos de cuatro cursos. Si necesitas más de cuatro, utiliza el campo de cantidad y detalla los nombres en el formato oficial adjunto.</p></div><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo total estimado</span><strong id="costoSilabos" class="text-xl text-[var(--esan-red)]">S/ 40.00</strong></div><div class="mt-5"><label class="field-label" for="formatoSilabos">Formato oficial de solicitud de emisión de sílabos</label><input id="formatoSilabos" class="field" type="file" accept=".pdf,.doc,.docx" required><p class="helper"><a class="underline text-[var(--esan-red)]" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_EMISI%C3%93N_DE_S%C3%8DLABOS.docx">Descargar formato oficial</a></p></div></section>`;
-    declarations=`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro haber leído y completado conforme la solicitud de emisión de sílabos.</span></label>`;
-    extraInfo=`<div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700"><p class="font-bold">Cuentas bancarias para el pago</p><p class="mt-2"><strong>BCP Fideicomiso ESAN:</strong> SV REC191-7292029-0-56. CCI: 002-191-007292029056-55 (soles).</p><p class="mt-2"><strong>BBVA Fideicomiso ESAN:</strong> SV REC0011-0371-01-00002688. CCI: 01137100010000268828 (soles).</p><p class="mt-2">Si requiere factura, escriba a <a class="underline" href="mailto:ssacad@ue.edu.pe">ssacad@ue.edu.pe</a> después de enviar su solicitud.</p><p class="mt-2">La constancia/sílabo se enviará al correo institucional y al correo personal registrado. Para actualizar el correo personal se requerirá la nueva dirección y una foto del DNI para validar la identidad.</p></div>`;
+    fixedCost=null;
+    introInfo=`<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 text-sm text-blue-950 mb-6 space-y-3"><p class="font-bold">ANTES DE SOLICITAR LOS SÍLABOS, DEBERÁ TENER EN CUENTA LOS SIGUIENTES PUNTOS:</p><p>Las constancias se emitirán en formato digital. Puede ver el modelo en el siguiente enlace: <a class="underline text-[var(--esan-red)] font-semibold" href="https://drive.google.com/file/d/1hMeVP_5YoQM3kbEW9xLLttJGMe0c2ruH/view?usp=drive_link" target="_blank" rel="noopener">VER MODELO</a>.</p><ol class="list-decimal pl-5 space-y-2"><li>No debe presentar ninguna deuda pendiente con la Universidad. De lo contrario, deberá regularizar su situación financiera con el área de Finanzas a través del correo: <a class="underline font-semibold" href="mailto:finanzaspregrado@ue.edu.pe">finanzaspregrado@ue.edu.pe</a>.</li><li>El costo por cada sílabo es de S/ 10.00 soles.</li><li>Solo puede solicitar sílabos de cursos aprobados (no convalidados ni desaprobados).</li><li>El plazo máximo para la emisión de la constancia es de 7 días hábiles (no sábados, domingos y feriados), contados a partir del día siguiente del envío del comprobante de pago.</li><li>Por medidas de seguridad, la constancia se enviará únicamente al correo institucional y al correo personal registrado en nuestra base de datos. En caso requiera actualizar su correo personal, deberá detallar la nueva dirección de e-mail y enviarnos la foto de su DNI para validar su identidad y proceder con el cambio solicitado.</li></ol><p>Su histórico de notas lo podrá visualizar en su portal académico (en él se encuentra su registro de cursos). Si no puede visualizarlo, puede solicitarlo a través del correo: <a class="underline font-semibold" href="mailto:ssacad@ue.edu.pe">ssacad@ue.edu.pe</a>.</p></div>`;
+    fields=`<section class="border-t border-gray-200 pt-6 space-y-6"><div><label class="field-label" for="motivoSilabo">MOTIVO DE LA SOLICITUD *</label><select id="motivoSilabo" name="motivoSolicitud" class="field" required><option value="">SELECCIONE UN MOTIVO</option><option value="TRABAJO">TRABAJO</option><option value="ESTUDIOS">ESTUDIOS</option><option value="PERSONALES">PERSONALES</option></select></div><div><label class="field-label" for="cantidadSilabos">CANTIDAD DE SÍLABOS SOLICITADOS *</label><input id="cantidadSilabos" name="cantidadSilabos" class="field" type="number" min="1" max="${CURSOS_SILABOS.length}" step="1" required value="1" oninput="actualizarCamposCursosSilabos();actualizarCostoSilabos()"><p class="helper">EL COSTO ES DE S/ 10.00 POR CADA SÍLABO. SE MOSTRARÁ UN DESPLEGABLE POR CADA SÍLABO SOLICITADO.</p></div><div><h3 class="font-extrabold text-gray-900 mb-3">CURSO(S) SOLICITADO(S) *</h3><div id="nombresSilabos" class="space-y-4"></div></div><div class="rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">COSTO TOTAL ESTIMADO</span><strong id="costoSilabos" class="text-xl text-[var(--esan-red)]">S/ 10.00</strong></div><div class="format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:</p><p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_EMISI%C3%93N_DE_S%C3%8DLABOS.docx"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p><label class="field-label" for="formatoSilabos">ADJUNTAR SOLICITUD DE EMISIÓN DE SÍLABOS *</label><input id="formatoSilabos" name="formatoSilabos" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div></section>`;
+    declarations=`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" name="declaracionEmisionSilabos" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro haber leído y completado conforme la solicitud de emisión de sílabos.</span></label>`;
+    extraInfo=`<div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700"><p class="font-bold">CUENTAS BANCARIAS PARA EL PAGO</p><p class="mt-2"><strong>BCP Fideicomiso ESAN:</strong> SV REC191-7292029-0-56. CCI: 002-191-007292029056-55 (soles).</p><p class="mt-2"><strong>BBVA Fideicomiso ESAN:</strong> SV REC0011-0371-01-00002688. CCI: 01137100010000268828 (soles).</p><p class="mt-2">La constancia o el sílabo se enviará al correo institucional y al correo personal registrado. Para actualizar el correo personal se requerirá la nueva dirección y una foto del DNI para validar la identidad.</p></div>`;
   // CAJA — CONSTANCIA DE CONDUCTA
   } else if(key==="constanciaConducta"){
     fixedCost=30;
-    fields=`<section class="border-t border-gray-200 pt-6"><div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 mb-5"><p class="font-bold">Información importante</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>La constancia se emite en formato digital.</li><li>Costo: S/ 30.00.</li><li>Plazo máximo: 7 días hábiles desde el día siguiente de registrar el comprobante de pago.</li><li>Se enviará al correo institucional y al correo personal registrado.</li><li>Para regularizar deudas, contacte a <a class="underline" href="mailto:cobranzaspregrado@ue.edu.pe">cobranzaspregrado@ue.edu.pe</a>, con copia a finanzaspregrado@ue.edu.pe, echavez@esan.edu.pe y bbarzola@esan.edu.pe.</li></ul></div><div><label class="field-label" for="formatoConducta">Formato oficial de solicitud de constancia de conducta</label><input id="formatoConducta" class="field" type="file" accept=".pdf,.doc,.docx" required><p class="helper"><a class="underline text-[var(--esan-red)]" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/SOLICITUD_DE_CONSTANCIA_DE_CONDUCTA.docx">Descargar formato oficial</a></p></div><p class="mt-4 text-sm text-gray-600">Modelo de constancia: <a class="underline text-[var(--esan-red)]" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1QXlc-NM5Eo1OKtyb1KE0gYto1XZwmmPA/view?usp=drive_link">ver modelo digital</a>.</p><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo de la constancia</span><strong class="text-xl text-[var(--esan-red)]">S/ 30.00</strong></div></section>`;
+    introInfo=`<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 text-sm text-blue-950 mb-6 space-y-3"><p class="font-extrabold text-base">SOLICITUD DE CONSTANCIA DE CONDUCTA</p><p>Estimado(a) estudiante:</p><p>Reciba un cordial saludo, la constancia se emitirá en formato digital. Puede ver el modelo en el siguiente enlace: <a class="underline text-[var(--esan-red)] font-semibold" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1QXlc-NM5Eo1OKtyb1KE0gYto1XZwmmPA/view?usp=drive_link">VER MODELO DE CONSTANCIA</a>.</p><p>Antes de solicitar la constancia de conducta, deberá tener en cuenta los siguientes puntos:</p><ol class="list-decimal pl-5 space-y-2"><li>No debe presentar ninguna deuda pendiente con la Universidad. De lo contrario, deberá regularizar su situación financiera a través del correo <a class="underline font-semibold" href="mailto:cobranzaspregrado@ue.edu.pe">cobranzaspregrado@ue.edu.pe</a>, con copia a <a class="underline" href="mailto:finanzaspregrado@ue.edu.pe">finanzaspregrado@ue.edu.pe</a>, <a class="underline" href="mailto:echavez@esan.edu.pe">echavez@esan.edu.pe</a> y <a class="underline" href="mailto:bbarzola@esan.edu.pe">bbarzola@esan.edu.pe</a>.</li><li>El costo de la constancia es de S/ 30.00.</li><li>El plazo máximo para la emisión de la constancia es de 7 días hábiles (no sábados, domingos ni feriados), contados a partir del día siguiente del envío del comprobante de pago.</li><li>Por medidas de seguridad, la constancia se enviará únicamente al correo institucional y al correo personal registrado en nuestra base de datos. En caso requiera actualizar su correo personal, deberá detallar la nueva dirección de e-mail y enviarnos la foto de su DNI para validar su identidad y proceder con el cambio solicitado.</li></ol></div>`;
+    fields=`<section class="border-t border-gray-200 pt-6"><div class="format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:</p><p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" href="./formato_solicitud_constancia_conducta.docx" download="formato_solicitud_constancia_conducta.docx"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p><label class="field-label" for="formatoConducta">ADJUNTAR SOLICITUD DE CONSTANCIA DE CONDUCTA *</label><input id="formatoConducta" name="formatoConducta" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">COSTO DE LA CONSTANCIA</span><strong class="text-xl text-[var(--esan-red)]">S/ 30.00</strong></div></section>`;
     declarations=["Declaro no tener deuda pendiente con la Universidad.","Declaro haber leído y completado conforme la solicitud de constancia de conducta.",declConsentimiento].map(d=>`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">${d}</span></label>`).join("");
-    extraInfo=`<p class="text-sm text-gray-600">El comprobante de pago se registrará después de generar el ticket, mediante el formulario común de Caja. Si requiere factura, escriba a <a class="underline" href="mailto:ssacad@ue.edu.pe">ssacad@ue.edu.pe</a>.</p>`;
+    extraInfo=``;
   // CAJA — CONSTANCIA DE PRIMERA MATRÍCULA
   } else if(key==="constanciaPrimeraMatricula"){
     fixedCost=30;
-    fields=`<section class="border-t border-gray-200 pt-6"><div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 mb-5"><p class="font-bold">Información importante</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>La constancia se emite en formato digital.</li><li>Costo: S/ 30.00.</li><li>Plazo máximo indicado en el formulario original: 7 días hábiles desde el día siguiente de completar la solicitud.</li><li>Se enviará al correo institucional y al correo personal registrado.</li><li>Para actualizar el correo personal, deberá proporcionar la nueva dirección y una foto del DNI para validar su identidad.</li></ul><p class="mt-2">Modelo de constancia: <a class="underline" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1jN3chN7sx5t68NP1U7sUPwZnqtcgfGSL/view?usp=drive_link">ver modelo digital</a>.</p></div><div><label class="field-label" for="cambioCarreraConstancia">¿Realizó cambio de carrera?</label><select id="cambioCarreraConstancia" class="field" required><option value="">Seleccione una respuesta</option><option value="SI">SÍ</option><option value="NO">NO</option></select></div><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo de la constancia</span><strong class="text-xl text-[var(--esan-red)]">S/ 30.00</strong></div></section>`;
-    extraInfo=`<p class="text-sm text-gray-600">Después de generar el ticket, el pago se reportará mediante el formulario común de Caja. Está pendiente confirmar si el plazo se contará desde la solicitud o desde el registro del pago.</p>`;
+    introInfo=`<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 text-sm text-blue-950 mb-6 space-y-3"><p class="font-extrabold text-base">SOLICITUD DE CONSTANCIA DE PRIMERA MATRÍCULA</p><p>Las Constancias se emitirán en formato digital, puede ver el modelo en el siguiente enlace: <a class="underline text-[var(--esan-red)] font-semibold" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1jN3chN7sx5t68NP1U7sUPwZnqtcgfGSL/view?usp=drive_link">VER MODELO DE CONSTANCIA</a>.</p><p>Antes de solicitar la constancia de primera matrícula, deberá tener en cuenta los siguientes puntos:</p><ol class="list-decimal pl-5 space-y-2"><li>El costo de la constancia es de S/30.00 soles.</li><li>El plazo máximo para la emisión de la constancia es de 7 días hábiles (no sábados, domingos y feriados), contados a partir del día siguiente de llenado el formulario.</li><li>Por medidas de seguridad, la constancia se enviará únicamente al correo institucional y al correo personal registrado en nuestra base de datos. En caso requiera actualizar su correo personal, deberá detallar la nueva dirección de e-mail y enviarnos la foto de su DNI para validar su identidad y proceder con el cambio solicitado.</li></ol></div>`;
+    fields=`<section class="border-t border-gray-200 pt-6"><div class="mb-5"><label class="field-label" for="cambioCarreraConstancia">¿REALIZÓ CAMBIO DE CARRERA? *</label><select id="cambioCarreraConstancia" name="cambioCarreraConstancia" class="field" required onchange="alternarCarreraOrigenConstancia(this)"><option value="">SELECCIONE UNA RESPUESTA</option><option value="SI">SÍ</option><option value="NO">NO</option></select></div><div id="bloqueCarreraOrigenConstancia" class="hidden mb-5"><label class="field-label" for="carreraOrigenConstancia">CARRERA DE ORIGEN *</label><select id="carreraOrigenConstancia" name="carreraOrigenConstancia" class="field"><option value="">SELECCIONE LA CARRERA DE ORIGEN</option>${CARRERAS.map(c=>`<option value="${escaparHTML(c)}">${escaparHTML(c).toLocaleUpperCase("es-PE")}</option>`).join("")}<option value="OTROS">OTROS</option></select></div><div class="mt-5 format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:</p><p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" href="./formato_solicitud_constancia_primera_matricula.docx" download="formato_solicitud_constancia_primera_matricula.docx"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p><label class="field-label" for="formatoPrimeraMatricula">ADJUNTAR SOLICITUD DE CONSTANCIA DE PRIMERA MATRÍCULA *</label><input id="formatoPrimeraMatricula" name="formatoPrimeraMatricula" class="field" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div><div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">COSTO DE LA CONSTANCIA</span><strong class="text-xl text-[var(--esan-red)]">S/ 30.00</strong></div></section>`;
+    declarations=`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" name="declaracionPrimeraMatricula" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro haber leído y completado conforme la solicitud de constancia de primera matrícula.</span></label>`;
+    extraInfo=``;
   // CAJA — CONSTANCIAS DE PROMEDIO, CRÉDITOS Y RENDIMIENTO ACADÉMICO
   } else if(["constanciaPromedio","constanciaCreditos","constanciaRendimientoFacultad","constanciaRendimientoPromedio"].includes(key)){
     const typeInfo={constanciaPromedio:{nombre:"Constancia de Promedio Ponderado Acumulado",costo:10,ciclo:false},constanciaCreditos:{nombre:"Constancia de Número de Créditos Acumulados",costo:10,ciclo:false},constanciaRendimientoFacultad:{nombre:"Constancia de Rendimiento Académico por Facultad",costo:10,ciclo:true},constanciaRendimientoPromedio:{nombre:"Constancia de Rendimiento Académico y Promedio Ponderado",costo:20,ciclo:true}}[key];
     fixedCost=typeInfo.costo;
-    fields=`<section class="border-t border-gray-200 pt-6"><div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 mb-5"><p class="font-bold">Información importante</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Las constancias se emiten en formato digital.</li><li>El plazo máximo es de 7 días hábiles desde el día siguiente del envío del comprobante de pago.</li><li>Se enviarán al correo institucional y al correo personal registrado. Para actualizar el correo personal, se solicitará la nueva dirección y una foto del DNI.</li><li>Se emitirá una constancia por cada ciclo seleccionado, cuando corresponda.</li></ul><p class="mt-2">Modelos oficiales: <a class="underline" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/MODELOS_DE_CONSTANCIAS_DE_RENDIMIENTO_ACADEMICO.pdf">consultar modelos</a>.</p></div><div><label class="field-label" for="motivoRendimiento">Motivo de la solicitud</label><select id="motivoRendimiento" class="field" required><option value="">Seleccione un motivo</option>${motivosRendimiento.map(x=>`<option>${x}</option>`).join("")}</select></div>${typeInfo.ciclo?`<div class="mt-5"><label class="field-label" for="ciclosRendimiento">Indique el ciclo o los ciclos</label><select id="ciclosRendimiento" class="field" multiple size="8" required>${cicloOptions}</select><p class="helper">Puede seleccionar más de un ciclo. Mantenga presionada la tecla Ctrl (Windows) o Command (Mac) al seleccionar varios. Se emitirá una constancia por ciclo.</p></div>`:""}<div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo estimado</span><strong id="costoRendimiento" class="text-xl text-[var(--esan-red)]">S/ ${typeInfo.costo.toFixed(2)}${typeInfo.ciclo?" por ciclo":""}</strong></div><p class="mt-4 text-sm text-gray-600">Si requiere factura, escriba a <a class="underline text-[var(--esan-red)]" href="mailto:ssacad@ue.edu.pe">ssacad@ue.edu.pe</a> después de enviar el formulario.</p></section>`;
+    fields=`<section class="border-t border-gray-200 pt-6"><div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 mb-5"><p class="font-bold">Información importante</p><ul class="list-disc pl-5 mt-2 space-y-1"><li>Las constancias se emiten en formato digital.</li><li>El plazo máximo es de 7 días hábiles desde el día siguiente del envío del comprobante de pago.</li><li>Se enviarán al correo institucional y al correo personal registrado. Para actualizar el correo personal, se solicitará la nueva dirección y una foto del DNI.</li><li>Se emitirá una constancia por cada ciclo seleccionado, cuando corresponda.</li></ul><p class="mt-2">Modelos oficiales: <a class="underline" target="_blank" rel="noopener" href="https://uevirtual.ue.edu.pe/intranet/images/01-ServAcademico/Tramites-Academicos/MODELOS_DE_CONSTANCIAS_DE_RENDIMIENTO_ACADEMICO.pdf">consultar modelos</a>.</p></div><div><label class="field-label" for="motivoRendimiento">Motivo de la solicitud</label><select id="motivoRendimiento" class="field" required><option value="">Seleccione un motivo</option>${motivosRendimiento.map(x=>`<option>${x}</option>`).join("")}</select></div>${typeInfo.ciclo?`<div class="mt-5"><label class="field-label" for="ciclosRendimiento">Indique el ciclo o los ciclos</label><select id="ciclosRendimiento" class="field" multiple size="8" required>${cicloOptions}</select><p class="helper">Puede seleccionar más de un ciclo. Mantenga presionada la tecla Ctrl (Windows) o Command (Mac) al seleccionar varios. Se emitirá una constancia por ciclo.</p></div>`:""}<div class="mt-5 rounded-xl bg-gray-50 border border-gray-200 p-4 flex items-center justify-between"><span class="font-bold text-gray-700">Costo estimado</span><strong id="costoRendimiento" class="text-xl text-[var(--esan-red)]">S/ ${typeInfo.costo.toFixed(2)}${typeInfo.ciclo?" por ciclo":""}</strong></div></section>`;
     declarations=`<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">${declConsentimiento}</span></label><label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro haber leído y completado conforme el presente formulario.</span></label><label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionCaja mt-1 accent-red-600" required><span class="text-sm text-gray-700">Confirmo que he leído la información importante.</span></label>`;
     extraInfo=`<div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700"><p class="font-bold">Cuentas bancarias para el pago</p><p class="mt-2"><strong>BCP Fideicomiso ESAN:</strong> SV REC191-7292029-0-56. CCI: 002-191-007292029056-55 (soles).</p><p class="mt-2"><strong>BBVA Fideicomiso ESAN:</strong> SV REC0011-0371-01-00002688. CCI: 01137100010000268828 (soles).</p></div><!-- BORRADOR NO VISIBLE: aviso original sobre solicitudes de rendimiento académico del ciclo 2026-1 a partir del 24 de agosto de 2026. Se conserva aquí para futura actualización. -->`;
   }
 
-  document.getElementById("viewer").innerHTML=`${header}<form id="formularioCaja" class="glass rounded-2xl p-6 sm:p-8 space-y-7" novalidate onsubmit="event.preventDefault(); validarFormularioCaja('${key}');">${student}${fields}${declarations?`<section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-4">Declaraciones</h3><div class="space-y-3">${declarations}</div></section>`:""}<section class="border-t border-gray-200 pt-6 space-y-4">${extraInfo}<div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>Importante:</strong> esta versión permite revisar y validar el formulario en pantalla, pero la recepción de la solicitud, la generación del ticket, el correo y el registro del pago todavía requieren la integración específica del backend para este trámite. No se guardará información desde este formulario.</div><button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-7 py-3.5 text-white font-bold shadow-lg"><i data-lucide="check-circle" class="w-5 h-5"></i>Validar solicitud</button><div id="estadoCaja" class="hidden rounded-xl border p-4 text-sm" aria-live="polite"></div></section></form></div>`;
+  document.getElementById("viewer").innerHTML=`${header}${introInfo}<form id="formularioCaja" class="glass rounded-2xl p-6 sm:p-8 space-y-7" novalidate onsubmit="event.preventDefault(); validarFormularioCaja('${key}');">${student}${fields}${declarations?`<section class="border-t border-gray-200 pt-6"><h3 class="text-lg font-extrabold text-gray-900 mb-4">Declaraciones</h3><div class="space-y-3">${declarations}</div></section>`:""}<section class="border-t border-gray-200 pt-6 space-y-4">${extraInfo}<button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-7 py-3.5 text-white font-bold shadow-lg"><i data-lucide="check-circle" class="w-5 h-5"></i>Validar solicitud</button><div id="estadoCaja" class="hidden rounded-xl border p-4 text-sm" aria-live="polite"></div></section></form></div>`;
   document.getElementById("topTitle").textContent=tramite.nombre;
   actualizarMenuActivo(key); toggleMenu(false);
   // El código de Caja viene de la sesión y el campo está en solo lectura.
   const code=document.getElementById("cajaCodigo");
   if(code){ code.value=obtenerCodigoSesion(); code.readOnly=true; code.classList.add("bg-gray-100","cursor-not-allowed"); }
+  const email=document.getElementById("cajaCorreo");
+  if(email){ email.value=code?.value.trim()?`${code.value.trim()}@ue.edu.pe`:""; email.readOnly=true; email.classList.add("bg-gray-100","cursor-not-allowed"); }
   const name=document.getElementById("cajaNombre");
   name?.addEventListener("input",()=>{name.value=name.value.toLocaleUpperCase("es-PE");});
   lucide.createIcons(); document.getElementById("viewer").scrollTop=0;
-  if(key==="examenRezagados") actualizarTotalExamenes();
-  if(key==="emisionSilabos") actualizarCostoSilabos();
+  if(key==="emisionSilabos"){ actualizarCamposCursosSilabos(); actualizarCostoSilabos(); }
   if(["constanciaRendimientoFacultad","constanciaRendimientoPromedio"].includes(key)) actualizarCostoRendimiento(key==="constanciaRendimientoFacultad"?10:20);
   inicializarCamposOtro(document.getElementById("formularioCaja"));
+  if(key==="constanciaPrimeraMatricula") alternarCarreraOrigenConstancia(document.getElementById("cambioCarreraConstancia"));
 }
 
+const DOCENTES_REZAGADOS = ["AGUILAR LAGOS GARY ANTONIO","AGUILERA SERPA CESAR AUGUSTO","AGUIRRE GAMARRA CARLOS ANTONIO","AHOMED CHAVEZ OMAR","ALDANA RIVERA SUSANA","ALTAMIRANO CRUZ CARLOS MANUEL","ALVA FALCÓN CÉSAR ALFONSO","ALVARADO GRANDE OSWALDO JULIO","ALVARADO PORTALINO ERNESTO","AMÉSQUITA CUBILLAS FIDEL EDGARD","ANDALUZ LY RAFAEL AUGUSTO","ANGULO ESCUDERO JUAN MARTIN","APHANG LAM ROBER LIUWAIFON","ARANA ÑIQUE HERNÁN ALFONSO","ARAUCO LIVIA MAYRA","ARIAS VALVERDE GINA KATHERINE","AVEROS SALINAS GIOVANNA","AVILA HERRERA HENRY JOSE","AYALA . YARID","AZAÑERO SAONA JOSÉ MANUEL","BAETHGE TALLEDO BRITTA SABINE","BALDEÓN MOLLEDA DANTE REYNALDO","BALLON ALVAREZ EBER JOSEPH","BARDALES SIGUAS LUIS RODOLFO","BENITES ARRIETA GABRIEL WILSON","BETALLELUZ MENESES BETFORD ADRIÁN","BORDA HUAMAN HENRY CLAUDIO","BOZA TORREJON PABLO","BRENNER GALARZA GLORIA CECILIA","BRIOSCHI . ARIANNA","BUSTOS ALVAREZ VARINIA","CABALLERO LA ROSA RENATO","CACEDA QUISPE MARISOL","CÁCERES VILCA STHEFANIE","CALDERON CONTRERAS VALENTIN JESUS","CALDERÓN NIQUIN MARKS ARTURO","CALLE GONZÁLEZ KARLO PIERO","CALLE MONTES VICTORIA DORIS","CALVO CÓRDOVA JUAN FERNANDO","CAMACHO ZEGARRA MARÍA AUGUSTA","CAMARGO ROMÁN MARIELA ISABEL","CANALES ARIAS FELIX","CANO MIYAHIRA BRENDA","CARDENAS RIOS MONICA GUISELA","CARRASCO RIVERA CONSUELO ELSA","CARRERO VILELA RICARDO","CARRILLO MEZA LILLIAN LOURDES","CARRION PUELLES NALDI SUSAN","CASAS NAVARRO JUSTO RAYMUNDO","CASTILLA SALAZAR CARLOS AUGUSTO","CASTILLO RODRIGUEZ DIANA","CASTRO GAMARRA GIANNINA MARIA","CCOICCA PACASI YURI JAVIER","CHANG OLIVAS MARITA CECILIA","CHANG URIBE LUIS ALBERTO","CHAVEZ GONZALES ANGEL MARCO","CHAVEZ ROJAS MONICA PATRICIA","CHERO SALAZAR WILLY","CHIH-YUAN . CHOU","CHINCARO DEL CORAL OMAR ANTONIO","CHIRI JAIME ALBERTO SANDRO","CHIRINOS ANTEZANA ARMANDO","CHOY PUN AUGUSTO CARLOS","CIEZA VILLAVICENCIO JONATHAN SCOTT","COLOMA DIEZ CANSECO JOSE LUIS","CORNEJO DÍAZ RENÉ HELBERT","CORNEJO VILLENA HUGO","CORTEZ CUMPA JORGE ALBERTO","CORTEZ TANGHERLINI DANIEL","COSTA GALVEZ JEAN CARLO","CRUZ CANO RONALD","CRUZADO RIBEYRO ANITA JUSTINA","CUBA BALVIN FIDEL","CUERVO GUZMÁN SERGIO MIGUEL","DÁVILA GARCÍA JOSÉ YASSER","DAVILA JARAMILLO GUILLERMO","DE LA TORRE PAREDES CARLOS ANDRÉS","DE TRAMONTANA PINZÁS KIANA","DE URIOSTE SAMANAMUD ROBERTO RICARDO","DEL CARPIO GALLEGOS JAVIER FERNANDO","DEL CASTILLO REYES JORGE ALEJANDRO","DELGADO LUJÁN DE PIAZZON ADRIANA ROSARIO","DIAZ CHAVEZ ELY","DIAZ ESQUIVEL CRISTHIAN MANUEL","DIAZ MONTES EILLEN ELVIRA","DORIN . MICHAEL ANDREW","EGÚSQUIZA GALLO MERY ENNY","ELGUERA QUISPE SAÚL","ELÍAS LICERA LUIS SALVADOR","ELÍAS ROJAS JUAN FERNANDO","ESPINOSA WINDER FRANCISCO","ESPINOZA COLÁN GLORIA ANGÉLICA ELENA","ESQUIVEL ORTIZ JAIRO YAMIL","ESTRADA MENDOZA MIGUEL LUIS","FABIAN ARTEAGA JUNIOR JOHN","FALCON ROQUE JESUS MARINO","FALEN ZEVALLOS LUIS","FERNANDEZ RODRIGUEZ MILAGRITOS NORA","FERNANDEZ VASQUEZ RICHARD FERNANDO","FIGUEROA CORNEJO CLARA GABINA","FLORES BAHAMONDE MIGUEL ALBERTO","FLORES MARIN DARIO ENRIQUE","FLORES SALINAS JOSE ALBERTO","FRANCISKOVIC INGUNZA JUBITZA MARIANA","GABILONDO ALVAREZ SERGIO ALEJANDRO","GABRIEL RIVERA JOSE LUIS","GALLO MEDINA MARIO ALONSO","GALVEZ MONTERO JOSE FRANCISCO","GARCIA COBOS CARLOS","GARCIA WESTPHALEN LUIS ENRIQUE","GARRIDO . ALEXANDER","GEE CABALLERO BILL WILLIAM","GONZALES FERNÁNDEZ GUISSELA","GONZALES LOPEZ ROLANDO ALBERTO","GONZALES ROMERO SERGIO EDILBERTO","GONZALEZ MENDOZA CARLOS ALBERTO","GRANDEZ BARRÓN PERCY VICTOR RAÚL","GUERRERO SALCEDO FIORELLA","GUEVARA BRINGAS RICARDO","GUILLEN UYEN JORGE BRAULIO","GUTIÉRREZ OCHOA OMAR DARÍO","HENRIQUEZ AYÍN FELIPE ALBERTO","HORNA SALDAÑA CÉSAR JHONNATAN PASELI","HUAMAN PEREZ FERNANDO","HUAMANCHAHUA CANCHANYA DEYBY MAYCOL","HUIMAN CRUZ ALBERTO","HURTADO MAGÁN GIOVANA IRIS","ISASI KÁMICHE MARCOS","JAMANCA RIOS GRACE DIANA","JORGE CAMARGO EDGARDO WILMER","KANASHIRO TOME JULIO","KUYENG RUIZ JUAN LUIS","LARA MASCARO JOSE ALBERTO","LEON VASQUEZ LUIS ALBERTO","LINARES TORRES FREDDY","LINDO HUERTAS ELSA MARÍA","LIZARZABURU BOLAÑOS EDMUNDO RAÚL ANTONIO","LIZARZABURU BOLAÑOS JUAN CARLOS ORLANDO","LLONTOP CÉSPEDES DIEGO","LOAYZA CERRÓN JULIO","LÓPEZ PANDURO CHESTER","LÓPEZ SALDAÑA CÉSAR ADOLFO","LU CHANG-SAY ESTUARDO","LUNA FLORES WALTER ISAÍAS","LUNA IZQUIERDO ADOLFO ELISEO","LUNA OLMOS JHULY","LUNGA CALDERON MILAGROS CECILIA","MAC KAY GONZA JULIO CESAR","MAMANÍ TICONA WILFREDO","MANRIQUE ECHEVARRIA VICTOR SANTIAGO","MANTILLA GONZALES DE LA COTERA EDUARDO JAVIER","MARCELO GORRIO LUIS","MARIN LIRA PERCY YGNACIO","MARIN VILLARÁN LUIS ERNESTO","MÁRQUEZ ARNAO DIEGO ARMANDO","MASIAS PERCCA DANIEL FERNANDO","MEDINA CABREJOS EVER","MEJIA ELÍAS CIRO JAVIER","MENDIOLA CABRERA ALFREDO MELCHOR","MENDIOLA CONTRERAS LUIS ENRIQUE","MERINO TABOADA MARÍA ANTONIETA JESÚS","MIKKELSEN GELDRES FÁTIMA PATRICIA","MINAURO LA TORRE TOMÁS ALBERTO","MIRANDA BENAVIDES JORGE DAVID","MONGE VARGAS MARIANA","MONTERROSO MAZZETTI ESPERANZA","MONTES OSORIO YULY","MONTESINOS CORDOVA JORGE LUIS","MONZÓN ZEVALLOS PABLO ENRIQUE","MORALES INGA SERGIO","MORALES VALLE GLADYS ESTHER","MORÁN YAÑEZ LUIS MIGUEL","MORENO HERMOZA EDUARDO JESÚS","NATTERI MIGUEL DE PRIEGO DOMINGO LUIS ALBERTO","NEVARES ROBLES LUIS JUAN","NÚÑEZ PONCE JULIO CESAR","NUÑEZ SULLCA ALBERTH JOHN","ÑAUPARI BELUPÚ CARLOS","OLIVOS ROSSINI LUISA MARIELLA","ONCHI MIURA FELIPE","OPORTO GUTIERREZ NATALY","ORREGO ALCALÁ LUIS MANUEL","ORTEGA PIANA MARCO ANTONIO","OSTOS MARIÑO JHONY LIONEL","OTINIANO ARANDA WALTER ARMANDO","PADILLA SANCHEZ MARIA ISABEL","PAREDES AGUIRRE MILTON","PAREDES CASTILLO JUALFER","PEÑALOZA ROJAS ENRIQUE EDUARDO","PERALTA MURIAS DIEGO","PEREZ-REYES DE LA FLOR JORGE","PINEDO PALACIOS PATRICA DEL PILAR","PIÑEYRO FERNANDEZ ENRIQUE JULIAN","PORTUGAL LARCO VANIA","PUESCAS CAMPOS ZAIDA BEATRIZ","PUNTRIANO ROSAS CESAR ALFREDO","PUT . DARIUSZ","QUEVEDO GARCÍA SUSY MILAGROS","QUINTANILLA CARDENAS HENRY","QUISPE SALGUERO JULIO RAFAEL","RABI HIRATA KARIM YADALLAH MARTIN","RAJAMENT . VINOD","RAMÍREZ RONDÁN NELSON RAFAEL","RÁZURI VALDIVIA PILAR VICTORIA","REES GARETH HUW","REGALADO PEZÚA OTTO","RIOS RIVERO FLOR ELVIRA","RIVERA CHANTA KEVIN SAMUEL","RODRIGUEZ . FRANCISCO","ROJAS ROJAS JORGE LUIS","ROO SUPERLANO ELBA","ROSALES LÓPEZ PEDRO PABLO","RUIZ CADENILLAS HAYDEE BEATRIZ","RUIZ SANTAMARÍA JUAN JAVIER","SAENZ ARTEAGA ARTURO RODOLFO","SALAZAR RAMIREZ DESIREE AVELINA","SAN MARTIN VILLAVERDE DIEGO","SANDOVAL CORNEJO HILDA","SANTILLAN PAREDES JEFFERSON","SERRANO . TERESITA","SIERRA FLORES LUIS MIGUEL","SILBERMAN PACH BEVERLY RACHAEL","SOTA SÁNCHEZ PERCY ANDRE","SOTO TAPIA SARA ARACELLI","SOTO ZUBIETA ELIAS MANUEL","TANG TONG EDUARDO","TAPIA RONDÓN PAMELA","TASSARA ZEVALLOS ORNELLA VANESSA","TENORIO CARRANZA ALESSANDRA ROXANA","TORRES GUEVARA JUAN JESUS","TUESTA SILVA WILDER","URBINA ROMERO LUIS FRANCO","VALDERRAMA JULCA PATRICIA ENIT","VALDEZ SALAS MARIO MARTIN","VALDIVIA GAGO PAUL ALEJANDRO","VALDIVIESO PAYVA GUILLERMO","VALENZUELA GARCES JORGE","VALERA OLIVARES DANIEL FERNANDO","VALERIANO CUBA ENRIQUE","VARGAS BECERRA BRAULIO CESAR","VARGAS HUANCA GEORGETTE DE LAS MERCEDES","VASQUEZ SANABRIA FERNANDO DAVID","VELARDE ALVAREZ RODRIGO","VELEZ GADEA JUAN CARLOS","VENTURA EGOAVIL JOSÉ EPIFANIO","VERGIU CANTO JORGE LUIS","WAKABAYASHI MUROYA JOSE LUIS","WALKER . JAY","YAN LAU MARIO ALBERTO","ZAMORA RAMOS ULISES JOSÉ","ZAVALETA CAVANI STEVE","ZURITA SALDAÑA VICTOR RAÚL"];
 function crearBloqueExamenRezagado(n){
   const motivos=["ACCIDENTE","CITA EN EMBAJADA","FAMILIAR","LABORAL","PERSONAL","PROBLEMAS TÉCNICOS","ROBO","SALUD","VIAJE","OTRO"];
-  return `<div class="bloqueExamen rounded-xl border border-gray-200 p-5" data-examen="${n}"><div class="flex items-center justify-between mb-4"><h4 class="font-extrabold text-gray-900">Evaluación ${n}</h4>${n>1?`<button type="button" class="text-sm font-bold text-red-600" onclick="this.closest('.bloqueExamen').remove();renumerarBloquesExamen();actualizarTotalExamenes();">Eliminar</button>`:""}</div><div class="grid sm:grid-cols-2 gap-4"><div><label class="field-label">Curso</label><input class="field examenCurso" required placeholder="Nombre del curso"><p class="helper">El catálogo desplegable por carrera se incorporará cuando se proporcione la lista oficial.</p></div><div><label class="field-label">Sección</label><select class="field examenSeccion" required><option value="">Seleccione sección</option>${Array.from({length:32},(_,i)=>`<option>S-${String(i+1).padStart(3,"0")}</option>`).join("")}<option>OTRO</option></select></div><div><label class="field-label">Tipo de evaluación</label><select class="field examenTipo" required><option value="">Seleccione tipo</option><option>PC</option><option>FINAL</option></select></div><div><label class="field-label">Docente</label><input class="field examenDocente" required placeholder="Nombre del docente"><p class="helper">El catálogo de docentes se incorporará cuando se proporcione.</p></div><div><label class="field-label">Motivo</label><select class="field examenMotivo" required><option value="">Seleccione motivo</option>${motivos.map(x=>`<option>${x}</option>`).join("")}</select></div><div><label class="field-label">¿Tiene sustento?</label><select class="field examenTieneSustento" required onchange="alternarSustentoExamen(this)"><option value="">Seleccione</option><option value="SI">Sí</option><option value="NO">No</option></select></div><div class="sm:col-span-2"><label class="field-label">Explique brevemente el motivo</label><textarea class="field examenExplicacion" rows="2" required placeholder="Describa brevemente el motivo"></textarea></div><div class="sm:col-span-2 sustentoWrap hidden"><label class="field-label">Documento de sustento</label><input class="field examenArchivo" type="file" accept=".pdf,.jpg,.jpeg,.png"><p class="helper">Por ejemplo, para motivos de salud: certificado médico, receta o comprobante de atención.</p></div></div></div>`;
+  const opcionesCursos=CURSOS_SILABOS.map(c=>`<option value="${escaparHTML(c)}">${escaparHTML(c)}</option>`).join("");
+  const opcionesDocentes=DOCENTES_REZAGADOS.map(d=>`<option value="${escaparHTML(d)}">${escaparHTML(d)}</option>`).join("");
+  const opcionesSecciones=Array.from({length:32},(_,i)=>`<option value="S-${String(i+1).padStart(3,"0")}">S-${String(i+1).padStart(3,"0")}</option>`).join("");
+  return `<div class="bloqueExamen rounded-xl border border-gray-200 p-5" data-examen="${n}">
+    <div class="flex items-center justify-between mb-4"><h4 class="font-extrabold text-gray-900">CURSO ${n}</h4>${n>1?`<button type="button" class="text-sm font-bold text-red-600 hover:underline" onclick="this.closest('.bloqueExamen').remove();renumerarBloquesExamen();">ELIMINAR CURSO</button>`:""}</div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label class="field-label" for="examenCurso${n}">CURSO A REZAGAR *</label><select id="examenCurso${n}" name="cursoRezagado_${n}" class="field examenCurso" required><option value="">SELECCIONE EL CURSO</option>${opcionesCursos}</select></div>
+      <div><label class="field-label" for="examenSeccion${n}">SECCIÓN *</label><select id="examenSeccion${n}" name="seccionRezagado_${n}" class="field examenSeccion" required><option value="">SELECCIONE LA SECCIÓN</option>${opcionesSecciones}<option value="OTRO">OTRO</option></select></div>
+      <div><label class="field-label" for="examenTipo${n}">TIPO DE EVALUACIÓN *</label><select id="examenTipo${n}" name="tipoEvaluacion_${n}" class="field examenTipo" required><option value="">SELECCIONE EL TIPO DE EVALUACIÓN</option><option value="EXAMEN FINAL">EXAMEN FINAL</option><option value="PC">PC</option><option value="OTRO">OTRO</option></select></div>
+      <div><label class="field-label" for="examenDocente${n}">DOCENTE *</label><select id="examenDocente${n}" name="docenteRezagado_${n}" class="field examenDocente" required><option value="">SELECCIONE EL DOCENTE</option>${opcionesDocentes}</select></div>
+      <div><label class="field-label" for="examenMotivo${n}">MOTIVO DE LA SOLICITUD *</label><select id="examenMotivo${n}" name="motivoRezagado_${n}" class="field examenMotivo" required><option value="">SELECCIONE EL MOTIVO</option>${motivos.map(x=>`<option value="${escaparHTML(x)}">${escaparHTML(x)}</option>`).join("")}</select></div>
+      <div class="sm:col-span-2 examenExplicacionWrap"><label class="field-label" for="examenExplicacion${n}">EXPLIQUE BREVEMENTE EL MOTIVO *</label><textarea id="examenExplicacion${n}" name="detalleMotivo_${n}" class="field examenExplicacion" rows="2" required oninput="this.value=this.value.toLocaleUpperCase('es-PE')" placeholder="DESCRIBA BREVEMENTE EL MOTIVO"></textarea></div>
+      <div><label class="field-label" for="examenTieneSustento${n}">¿CUENTA CON SUSTENTO? *</label><select id="examenTieneSustento${n}" name="tieneSustento_${n}" class="field examenTieneSustento" required><option value="">SELECCIONE UNA RESPUESTA</option><option value="SI">SÍ</option><option value="NO">NO</option></select></div>
+      <div class="sm:col-span-2 format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">FORMATO DE SOLICITUD PARA ESTE CURSO *</p><p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" href="./formato_solicitud_examen_rezagados.docx" download="formato_solicitud_examen_rezagados.docx"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p><label class="field-label" for="formatoExamenRezagados${n}">ADJUNTAR FORMATO DE SOLICITUD PARA ESTE CURSO *</label><input id="formatoExamenRezagados${n}" name="formatoExamenRezagados_${n}" class="field examenFormato" type="file" accept=".pdf" required><p class="helper mt-2">FORMATO PERMITIDO: PDF.</p></div>
+    </div>
+  </div>`;
 }
-function agregarBloqueExamenRezagado(){const c=document.getElementById("bloquesExamenRezagado");if(!c)return;const n=c.querySelectorAll(".bloqueExamen").length+1;c.insertAdjacentHTML("beforeend",crearBloqueExamenRezagado(n));renumerarBloquesExamen();actualizarTotalExamenes();inicializarCamposOtro(c);lucide.createIcons();}
-function renumerarBloquesExamen(){const c=document.getElementById("bloquesExamenRezagado");if(!c)return;c.querySelectorAll(".bloqueExamen").forEach((b,i)=>{b.dataset.examen=i+1;const h=b.querySelector("h4");if(h)h.textContent=`Evaluación ${i+1}`;const del=b.querySelector("button");if(del)del.classList.toggle("hidden",i===0);});}
-function alternarSustentoExamen(select){const wrap=select.closest(".bloqueExamen")?.querySelector(".sustentoWrap");const input=wrap?.querySelector("input");const visible=select.value==="SI";wrap?.classList.toggle("hidden",!visible);if(input)input.required=visible;}
-function actualizarTotalExamenes(){const c=document.getElementById("bloquesExamenRezagado");if(!c)return;const n=c.querySelectorAll(".bloqueExamen").length;const qty=document.getElementById("cantidadExamenes");const total=document.getElementById("costoExamenes");if(qty)qty.value=n;if(total)total.textContent=`S/ ${(n*100).toFixed(2)}`;}
-function alternarTodosSilabos(){const cb=document.getElementById("todosSilabos"),wrap=document.getElementById("nombresSilabos");if(wrap)wrap.classList.toggle("hidden",!!cb?.checked);if(cb?.checked)document.querySelectorAll(".nombreCursoSilabo").forEach(x=>x.value="");}
+function agregarBloqueExamenRezagado(){
+  const c=document.getElementById("bloquesExamenRezagado");
+  if(!c)return;
+  const n=Math.max(0,...[...c.querySelectorAll(".bloqueExamen")].map(b=>Number(b.dataset.examen)||0))+1;
+  c.insertAdjacentHTML("beforeend",crearBloqueExamenRezagado(n));
+  renumerarBloquesExamen();
+  inicializarCamposOtro(c);
+  lucide.createIcons();
+}
+function renumerarBloquesExamen(){
+  const c=document.getElementById("bloquesExamenRezagado");
+  if(!c)return;
+  c.querySelectorAll(".bloqueExamen").forEach((b,i)=>{
+    const h=b.querySelector("h4");
+    if(h)h.textContent=`CURSO ${i+1}`;
+  });
+}
+function actualizarCamposCursosSilabos(){
+  const cantidadInput=document.getElementById("cantidadSilabos"), container=document.getElementById("nombresSilabos");
+  if(!cantidadInput||!container)return;
+  const maximo=CURSOS_SILABOS.length;
+  let cantidad=parseInt(cantidadInput.value,10);
+  if(!Number.isInteger(cantidad)||cantidad<1)cantidad=1;
+  if(cantidad>maximo){cantidad=maximo;cantidadInput.value=String(maximo);}
+  const anteriores=[...container.querySelectorAll(".cursoSilaboItem")].map(b=>({curso:b.querySelector("select")?.value||"",otro:b.querySelector("[data-otro-campo]")?.value||""}));
+  const opciones=`<option value="">SELECCIONE EL CURSO</option>${CURSOS_SILABOS.map(c=>`<option value="${escaparHTML(c)}">${escaparHTML(c)}</option>`).join("")}`;
+  container.innerHTML=Array.from({length:cantidad},(_,i)=>`<div class="cursoSilaboItem rounded-xl border border-gray-200 p-4"><label class="field-label" for="cursoSilabo${i+1}">CURSO ${i+1} *</label><select id="cursoSilabo${i+1}" name="cursoSilabo${i+1}" class="field cursoSilaboSelect" required>${opciones}</select></div>`).join("");
+  inicializarCamposOtro(container);
+  [...container.querySelectorAll(".cursoSilaboItem")].forEach((b,i)=>{
+    const select=b.querySelector("select"), previo=anteriores[i];
+    if(select&&previo){select.value=previo.curso;manejarCampoOtro(select);const otro=b.querySelector("[data-otro-campo]");if(otro)otro.value=previo.otro;}
+  });
+}
 function actualizarCostoSilabos(){const qty=Math.max(0,parseInt(document.getElementById("cantidadSilabos")?.value||"0",10)||0);const out=document.getElementById("costoSilabos");if(out)out.textContent=`S/ ${(qty*10).toFixed(2)}`;}
 function actualizarCostoRendimiento(tarifa){const sel=document.getElementById("ciclosRendimiento");const count=sel?[...sel.selectedOptions].length:0;const out=document.getElementById("costoRendimiento");if(out)out.textContent=sel?`S/ ${(count*tarifa).toFixed(2)}`:`S/ ${tarifa.toFixed(2)}`;}
+function alternarCarreraOrigenConstancia(select){
+  const bloque=document.getElementById("bloqueCarreraOrigenConstancia");
+  const carrera=document.getElementById("carreraOrigenConstancia");
+  const mostrar=select?.value==="SI";
+  bloque?.classList.toggle("hidden",!mostrar);
+  if(carrera){
+    carrera.required=mostrar;
+    if(!mostrar){
+      carrera.value="";
+      const otroWrap=carrera.parentElement?.querySelector(`:scope > .campoOtroWrap[data-otro-para="carreraOrigenConstancia"]`);
+      const otroInput=otroWrap?.querySelector("input");
+      otroWrap?.classList.add("hidden");
+      if(otroInput){otroInput.value="";otroInput.required=false;}
+    }
+  }
+}
+
+/* VALIDACIÓN COMÚN PARA TODOS LOS FORMULARIOS DE TRÁMITES.
+   Bloquea la validación/envío si falta un campo obligatorio visible,
+   una declaración o un PDF requerido. Los campos condicionales ocultos
+   no bloquean hasta que la opción correspondiente los muestre. */
+function obtenerErroresCamposObligatorios(form){
+  if(!form) return [];
+  const errores=[];
+  const controles=[...form.querySelectorAll('input[required],select[required],textarea[required]')];
+  controles.forEach(el=>{
+    if(el.disabled || el.type==='hidden' || el.closest('.hidden,[hidden]')) return;
+    const labelEl=[...form.querySelectorAll('label')].find(label=>label.htmlFor===el.id) || el.closest('label');
+    const etiqueta=(labelEl?.innerText || el.getAttribute('aria-label') || el.name || el.id || 'este campo').replace(/\s+/g,' ').trim().replace(/\s*\*\s*$/,'');
+    let mensaje='';
+    if(el.type==='checkbox' && !el.checked){
+      mensaje=`Acepta la declaración obligatoria: ${etiqueta}.`;
+    }else if(el.type==='radio'){
+      const grupo=[...form.querySelectorAll('input[type="radio"][name]')].filter(x=>x.name===el.name && !x.disabled && !x.closest('.hidden,[hidden]'));
+      if(grupo.length && !grupo.some(x=>x.checked)) mensaje=`Selecciona una opción en: ${etiqueta}.`;
+    }else if(el.type==='file'){
+      if(!el.files || !el.files.length) mensaje=`Adjunta el documento obligatorio: ${etiqueta}.`;
+      else if(!/\.pdf$/i.test(el.files[0].name)) mensaje=`El documento de ${etiqueta} debe estar en formato PDF.`;
+    }else if(el.tagName==='SELECT' && el.multiple && ![...el.selectedOptions].length){
+      mensaje=`Selecciona al menos una opción en: ${etiqueta}.`;
+    }else if(!String(el.value || '').trim()){
+      mensaje=`Completa el campo obligatorio: ${etiqueta}.`;
+    }else if(typeof el.checkValidity==='function' && !el.checkValidity()){
+      mensaje=`Revisa el formato del campo: ${etiqueta}.`;
+    }
+    if(mensaje) errores.push({element:el,mensaje});
+  });
+  return errores;
+}
+
+function marcarErrorComunFormulario(error){
+  const el=error?.element;
+  if(!el) return;
+  el.classList.add('field-error');
+  let aviso=el.parentElement?.querySelector(':scope > .error-text');
+  if(!aviso){
+    aviso=document.createElement('p');
+    aviso.className='error-text';
+    el.insertAdjacentElement('afterend',aviso);
+  }
+  aviso.textContent=error.mensaje;
+  aviso.classList.remove('hidden');
+}
+
 function validarFormularioCaja(key){
   const form=document.getElementById("formularioCaja"),state=document.getElementById("estadoCaja");if(!form||!state)return;
   const code=document.getElementById("cajaCodigo")?.value.trim()||"",name=document.getElementById("cajaNombre")?.value.trim()||"";
   let errors=[];if(!/^\d{8}$/.test(code))errors.push("El código debe contener exactamente 8 dígitos.");if(name.length<3)errors.push("Ingresa los apellidos y nombres completos.");
-  for(const el of form.querySelectorAll("[required]")){if(el.type==="checkbox"&&!el.checked){errors.push("Debes aceptar todas las declaraciones obligatorias.");break;}if(el.type==="file"&&(!el.files||!el.files.length)){errors.push("Adjunta todos los documentos obligatorios.");break;}if(el.tagName==="SELECT"&&el.multiple&&![...el.selectedOptions].length){errors.push("Selecciona al menos un ciclo.");break;}if(el.type!=="checkbox"&&el.type!=="file"&&!(el.tagName==="SELECT"&&el.multiple)&&!String(el.value||"").trim()){errors.push("Completa todos los campos obligatorios.");break;}}
+  errors.push(...obtenerErroresCamposObligatorios(form).map(error=>error.mensaje));
   if(key==="examenRezagados"){
-    form.querySelectorAll(".bloqueExamen").forEach((b,i)=>{if(b.querySelector(".examenTieneSustento")?.value==="SI"&&!b.querySelector(".examenArchivo")?.files?.length)errors.push(`Adjunta el sustento de la evaluación ${i+1}.`);});
+    const bloques=[...form.querySelectorAll(".bloqueExamen")];
+    const cursos=bloques.map(b=>{
+      const sel=b.querySelector(".examenCurso");
+      if(!sel?.value)return "";
+      if(sel.value==="OTRO"){
+        const detalle=b.querySelector("[data-otro-campo]")?.value||"OTRO";
+        return normalizarTexto(detalle).trim();
+      }
+      return normalizarTexto(sel.value).trim();
+    }).filter(Boolean);
+    const cursosUnicos=new Set(cursos);
+    if(cursos.length!==cursosUnicos.size)errors.push("Has seleccionado un mismo curso más de una vez. Registra cada curso una sola vez.");
+    bloques.forEach((b,i)=>{
+      if(!b.querySelector(".examenFormato")?.files?.length)errors.push(`Adjunta el formato de solicitud en PDF del curso ${i+1}.`);
+    });
+    if(!bloques.length)errors.push("Agrega al menos un curso a la solicitud.");
   }
   if(key==="emisionSilabos"){
-    const qty=parseInt(document.getElementById("cantidadSilabos")?.value||"0",10);const all=document.getElementById("todosSilabos")?.checked;const entered=[...document.querySelectorAll(".nombreCursoSilabo")].some(x=>x.value.trim());if(!Number.isInteger(qty)||qty<1)errors.push("La cantidad de sílabos debe ser un número entero mayor que cero.");if(!all&&!entered)errors.push("Escribe al menos un curso o marca que solicitas todos los sílabos de cursos aprobados.");
+    const qty=Number(document.getElementById("cantidadSilabos")?.value||"0");
+    const cursos=[...form.querySelectorAll(".cursoSilaboSelect")];
+    if(!Number.isInteger(qty)||qty<1||qty>CURSOS_SILABOS.length)errors.push(`La cantidad de sílabos debe ser un número entero entre 1 y ${CURSOS_SILABOS.length}.`);
+    if(cursos.length!==qty)errors.push("Verifica que aparezca un desplegable por cada sílabo solicitado.");
+    if(cursos.some(select=>!select.value))errors.push("Selecciona el curso correspondiente en cada desplegable.");
   }
   if(key==="constanciaPrimeraMatricula"&&!document.getElementById("cambioCarreraConstancia")?.value)errors.push("Indica si realizaste cambio de carrera.");
   if(errors.length){state.className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900";state.innerHTML=`<strong>No se puede validar todavía:</strong><ul class="list-disc pl-5 mt-2">${[...new Set(errors)].map(e=>`<li>${e}</li>`).join("")}</ul>`;state.classList.remove("hidden");state.scrollIntoView({behavior:"smooth",block:"nearest"});return;}
@@ -2040,10 +2399,17 @@ function validarFormularioCaja(key){
   form.querySelectorAll("[data-otro-campo]").forEach(input=>{
     if(String(input.value||"").trim()) detallesOtroCaja[input.name || input.dataset.otroCampo] = String(input.value).trim();
   });
-  ultimaSolicitudFormularioPreparada = { accion:"registrarSolicitud", tramite:key, fechaRegistro:new Date().toISOString(), datos:datosCaja, detallesOtro:detallesOtroCaja };
-  state.className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950";
-  const ticketMsg="La vista previa está validada y se prepararon los datos, incluidos los detalles de las opciones «OTRO». La solicitud todavía no se ha enviado ni guardado: el Apps Script debe recibir esos campos y escribirlos en Google Sheets. También falta integrar el ticket, los correos, el almacenamiento de archivos y el registro de pago.";
-  state.innerHTML=`<strong>Validación de la vista previa completada.</strong><p class="mt-2">${ticketMsg}</p>`;state.classList.remove("hidden");state.scrollIntoView({behavior:"smooth",block:"nearest"});
+  const tipoConstanciaSeleccionada=key==="constanciasAcademicas"?(document.getElementById("tipoConstanciaCaja")?.value||key):key;
+  if(key==="constanciasAcademicas"){
+    const tipo=document.getElementById("tipoConstanciaCaja")?.value||"";
+    const cantidadCiclos=form.querySelectorAll(".cicloConstanciaItem select").length;
+    const tarifa=tipo==="constanciaRendimientoPromedio"?20:10;
+    datosCaja.costoEstimado=`S/ ${(tarifa*Math.max(cantidadCiclos,1)).toFixed(2)}`;
+    datosCaja.ciclosSolicitados=[...form.querySelectorAll(".cicloConstanciaItem select")].map(el=>el.value).filter(Boolean);
+  }
+  ultimaSolicitudFormularioPreparada = { accion:"registrarSolicitud", tramite:tipoConstanciaSeleccionada, categoriaTramite:key, fechaRegistro:new Date().toISOString(), datos:datosCaja, detallesOtro:detallesOtroCaja };
+  state.className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900";
+  state.innerHTML=`<strong>Los campos obligatorios se validaron correctamente.</strong><p class="mt-2">Revisa que la información ingresada sea correcta.</p>`;state.classList.remove("hidden");state.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
 /* ============================================================
@@ -2063,7 +2429,7 @@ function validarFormularioCaja(key){
    y un mecanismo de almacenamiento. La validación actual es local.
    ============================================================ */
 function renderFormularioGenerico(tramite){
-  if(["examenRezagados","emisionSilabos","constanciaConducta","constanciaPrimeraMatricula","constanciaPromedio","constanciaCreditos","constanciaRendimientoFacultad","constanciaRendimientoPromedio"].includes(tramite.key)){
+  if(["examenRezagados","emisionSilabos","constanciaConducta","constanciaPrimeraMatricula","constanciaPromedio","constanciaCreditos","constanciaRendimientoFacultad","constanciaRendimientoPromedio","constanciasAcademicas"].includes(tramite.key)){
     renderFormularioCaja(tramite);
     return;
   }
@@ -2080,8 +2446,8 @@ function renderFormularioGenerico(tramite){
     return `${year}-${sem}`;
   });
   const ciclosCortos = ["2026-1","2026-2","2027-1","2027-2","OTRO"];
-  const ciclosHtml = `<option value="">Seleccione un ciclo</option>${ciclos.map(c=>`<option value="${c}">${c}</option>`).join("")}`;
-  const ciclosCortosHtml = `<option value="">Seleccione un ciclo</option>${ciclosCortos.map(c=>`<option value="${c}">${c}</option>`).join("")}`;
+  const ciclosHtml = `<option value="">SELECCIONE UN CICLO</option>${ciclos.map(c=>`<option value="${c}">${c}</option>`).join("")}`;
+  const ciclosCortosHtml = `<option value="">SELECCIONE UN CICLO</option>${ciclosCortos.map(c=>`<option value="${c}">${c}</option>`).join("")}`;
   const declConsentimiento = "Declaro que todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.";
   const declFormato = `Declaro haber leído y completado conforme el formato de ${tramite.nombre}.`;
 
@@ -2089,7 +2455,9 @@ function renderFormularioGenerico(tramite){
   const input = (id,label,type="text",required=true,extra="") => `<div><label class="field-label" for="${id}">${label}</label><input id="${id}" name="${id}" class="field" type="${type}" ${required?"required":""} ${extra}></div>`;
   const textarea = (id,label,required=true,placeholder="Escriba aquí") => `<div class="sm:col-span-2"><label class="field-label" for="${id}">${label}</label><textarea id="${id}" name="${id}" class="field min-h-28" ${required?"required":""} placeholder="${placeholder}"></textarea></div>`;
   const select = (id,label,options,required=true) => `<div><label class="field-label" for="${id}">${label}</label><select id="${id}" name="${id}" class="field" ${required?"required":""}><option value="">Seleccione una opción</option>${options.map(o=>`<option value="${escaparHTML(o)}">${escaparHTML(o)}</option>`).join("")}</select></div>`;
-  const file = (id,label,required=true,accept=".pdf,.doc,.docx,.jpg,.jpeg,.png",link="") => `<div class="sm:col-span-2"><label class="field-label" for="${id}">${label}${required?" *":""}</label><input id="${id}" name="${id}" class="field" type="file" accept="${accept}" ${required?"required":""}>${link?`<p class="helper mt-2"><a class="underline text-[var(--esan-red)]" target="_blank" rel="noopener" href="${link}">Descargar formato oficial</a></p>`:""}<p class="helper">${required?"Adjunto obligatorio para continuar.":"Adjunto opcional, si corresponde."}</p></div>`;
+  // Los formatos descargables se publican junto al HTML o se enlazan a la fuente oficial.
+  // Todos los archivos que el estudiante adjunte deben cargarse en PDF.
+  const file = (id,label,required=true,accept=".pdf",link="") => `<div class="sm:col-span-2 format-upload-card rounded-xl border border-gray-200 p-4"><p class="font-bold text-gray-900 mb-3">${link?"DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:":"ADJUNTAR DOCUMENTO"}</p>${link?`<p class="mb-4"><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" target="_blank" rel="noopener" href="${link}"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR FORMATO DE SOLICITUD</a></p>`:""}<label class="field-label" for="${id}">${label}${required?" *":""}</label><input id="${id}" name="${id}" class="field" type="file" accept=".pdf" ${required?"required":""}><p class="helper mt-2">FORMATO PERMITIDO: PDF.${required?"":" ADJUNTO OPCIONAL."}</p></div>`;
   const checkbox = text => `<label class="flex items-start gap-3 rounded-xl border border-gray-200 p-4 cursor-pointer"><input type="checkbox" class="declaracionGenerica mt-1 accent-red-600" required><span class="text-sm text-gray-700">${text}</span></label>`;
   const careerField = `<div><label class="field-label" for="carreraGenerica">Carrera actual</label><select id="carreraGenerica" name="carrera" class="field" required>${carreras}</select></div>`;
   const courseField = input("cursoGenerico","Curso","text",true,'placeholder="Nombre del curso"');
@@ -2196,7 +2564,7 @@ function renderFormularioGenerico(tramite){
         </form>
         <div id="estadoFormularioGenerico" class="hidden mt-6 rounded-xl border p-4 text-sm leading-relaxed" aria-live="polite"></div>
       </section>
-      <div class="mt-5 flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-200 p-4"><i data-lucide="info" class="w-5 h-5 text-gray-500 shrink-0 mt-0.5"></i><p class="text-sm text-gray-600">Esta versión permite revisar campos y adjuntos en pantalla. El envío de archivos, el registro en Google Sheets, la generación de tickets y los correos se activarán al integrar y probar Google Apps Script.</p></div>
+
     </div>`;
 
   document.getElementById("topTitle").textContent = tramite.nombre;
@@ -2266,18 +2634,7 @@ function validarFormularioGenerico(key){
   const errores = [];
   const codigo = document.getElementById("codigoGenerico")?.value.trim() || "";
   if(!/^\d{8}$/.test(codigo)) errores.push("El código de la sesión no tiene ocho dígitos. Vuelve a iniciar el acceso.");
-  form.querySelectorAll("[required]").forEach(el=>{
-    if(el.closest(".conditional-fields.hidden")) return;
-    if(el.type === "checkbox" && !el.checked) errores.push("Debes aceptar todas las declaraciones obligatorias.");
-    else if(el.type === "file" && (!el.files || !el.files.length)) errores.push(`Adjunta el documento requerido: ${el.previousElementSibling?.textContent || el.id}.`);
-    else if(el.type !== "checkbox" && el.type !== "file" && !String(el.value || "").trim()) errores.push(`Completa el campo: ${el.previousElementSibling?.textContent || el.id}.`);
-    else if(el.type === "number" && el.value !== ""){
-      const n=Number(el.value);
-      if(el.min && n < Number(el.min)) errores.push(`El valor de ${el.previousElementSibling?.textContent || el.id} debe ser al menos ${el.min}.`);
-      if(el.max && n > Number(el.max)) errores.push(`El valor de ${el.previousElementSibling?.textContent || el.id} no puede superar ${el.max}.`);
-    }
-    if(el.tagName === "SELECT" && el.multiple && ![...el.selectedOptions].length) errores.push(`Selecciona al menos una opción en ${el.previousElementSibling?.textContent || el.id}.`);
-  });
+  errores.push(...obtenerErroresCamposObligatorios(form).map(error=>error.mensaje));
 
   if(key === "matriculaMenos12"){
     const n=Number(document.getElementById("creditosMatricula")?.value || 0);
@@ -2313,8 +2670,8 @@ function validarFormularioGenerico(key){
     datos: datosFormulario,
     detallesOtro: detallesOtro
   };
-  estado.className = "mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950";
-  estado.innerHTML = "<strong>Validación de la vista previa completada.</strong><p class=\"mt-2\">Los campos, incluidos los detalles escritos en las opciones «OTRO», ya están recopilados en la estructura preparada para el envío. Sin embargo, todavía no se guardó la solicitud: hay que actualizar el Apps Script para recibir estos datos y escribirlos en las columnas correspondientes de Google Sheets, además de integrar la carga de archivos, los tickets y los correos.</p>";
+  estado.className = "mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900";
+  estado.innerHTML = "<strong>Los campos obligatorios se validaron correctamente.</strong><p class=\"mt-2\">Revisa que la información ingresada sea correcta.</p>";
   estado.classList.remove("hidden");
   estado.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
@@ -2322,6 +2679,8 @@ function validarFormularioGenerico(key){
 function toggleMenu(force){
   const sidebar = document.getElementById("sidebar");
   const backdrop = document.getElementById("mobileBackdrop");
+  const button = document.getElementById("sidebarMenuButton");
+  if(!sidebar || !backdrop) return;
 
   let open;
   if(typeof force === "boolean"){
@@ -2330,14 +2689,32 @@ function toggleMenu(force){
     open = sidebar.classList.contains("-translate-x-full");
   }
 
-  if(open){
-    sidebar.classList.remove("-translate-x-full");
-    backdrop.classList.remove("hidden");
-  }else{
-    sidebar.classList.add("-translate-x-full");
-    backdrop.classList.add("hidden");
+  sidebar.classList.toggle("-translate-x-full", !open);
+  backdrop.classList.toggle("hidden", !open);
+  if(button){
+    button.setAttribute("aria-expanded", String(open));
+    button.setAttribute("aria-label", open ? "Cerrar menú lateral" : "Abrir menú lateral");
   }
 }
+
+/* Al cambiar entre móvil y escritorio, restablecer el estado del menú. */
+window.addEventListener("resize", function(){
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("mobileBackdrop");
+  const button = document.getElementById("sidebarMenuButton");
+  if(!sidebar || !backdrop) return;
+
+  if(window.innerWidth >= 1024){
+    sidebar.classList.remove("-translate-x-full");
+  } else {
+    sidebar.classList.add("-translate-x-full");
+  }
+  backdrop.classList.add("hidden");
+  if(button){
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "Abrir menú lateral");
+  }
+});
 
 
 /* ============================================================
@@ -2357,10 +2734,10 @@ function indexToCiclo(index){
   return `${anio}-${periodo}`;
 }
 
-function generarCiclos(cicloInicial){
+function generarCiclos(cicloInicial, cicloFinal = CICLO_FINAL){
 
   const inicio = cicloToIndex(cicloInicial);
-  const fin = cicloToIndex(CICLO_FINAL);
+  const fin = cicloToIndex(cicloFinal);
 
   const ciclos = [];
 
@@ -2400,15 +2777,20 @@ function obtenerCiclosIntermedios(ultimo, retorno){
 /* ============================================================
    LÓGICA DEL MONTO
    ============================================================ */
-function obtenerCiclosParaPago(ciclosIntermedios){
+function obtenerCiclosContabilizables(ciclosIntermedios){
   return ciclosIntermedios.filter(ciclo =>
-    !CICLOS_NO_CONSIDERADOS_PAGO.includes(ciclo)
+    !CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO.includes(ciclo)
   );
+}
+
+function obtenerCiclosParaPago(ciclosIntermedios){
+  // La misma lista de ciclos excluidos se aplica al conteo y al pago.
+  return obtenerCiclosContabilizables(ciclosIntermedios);
 }
 
 function obtenerCiclosExcluidosPago(ciclosIntermedios){
   return ciclosIntermedios.filter(ciclo =>
-    CICLOS_NO_CONSIDERADOS_PAGO.includes(ciclo)
+    CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO.includes(ciclo)
   );
 }
 
@@ -2426,8 +2808,8 @@ function calcularMonto(ciclosParaPago){
   // y continúa con el mismo patrón.
   //
   // IMPORTANTE:
-  // Los ciclos definidos en CICLOS_NO_CONSIDERADOS_PAGO
-  // se excluyen únicamente de este cálculo económico.
+  // Los ciclos definidos en CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO
+  // ya fueron excluidos tanto del conteo como del cálculo económico.
   return 300 * Math.ceil(cantidad / 2);
 }
 
@@ -2479,25 +2861,22 @@ function determinarSituacion(ciclosSuspendidos){
 /* ============================================================
    FORMULARIO
    ============================================================ */
+function alternarOtroMotivoRetorno(){const select=document.getElementById("motivoRetorno");if(select)manejarCampoOtro(select);ocultarResultadoSiExiste();}
+
 function prepararFormularioRetorno(){
   const carrera = document.getElementById("carrera");
   const ultimo = document.getElementById("ultimoCiclo");
   const retorno = document.getElementById("cicloRetorno");
 
-  // =====================================================
-  // CARRERAS
-  // =====================================================
-  CARRERAS.forEach(nombre => {
-    const option = document.createElement("option");
-    option.value = nombre;
-    option.textContent = nombre;
-    carrera.appendChild(option);
-  });
+  // CARRERAS: MISMA LISTA COMPARTIDA POR LOS DEMÁS FORMULARIOS,
+  // INCLUYE OTROS CON UN CAMPO OBLIGATORIO PARA ESPECIFICAR.
+  carrera.innerHTML = opcionesCarrerasHTML();
+  inicializarCamposOtro(document.getElementById("retornoForm"));
 
   // =====================================================
   // ÚLTIMO CICLO DE ESTUDIOS
   // =====================================================
-  const ciclosUltimo = generarCiclos(ULTIMO_CICLO_INICIAL);
+  const ciclosUltimo = generarCiclos(ULTIMO_CICLO_INICIAL, ULTIMO_CICLO_FINAL);
 
   ciclosUltimo.forEach(ciclo => {
     const option = document.createElement("option");
@@ -2545,35 +2924,143 @@ function prepararFormularioRetorno(){
       option.textContent = ciclo;
       retorno.appendChild(option);
     });
+
+    // El periodo de retorno aparece inicialmente en 2027-1.
+    // Si el estudiante ya había elegido otro periodo y sigue disponible, se conserva.
+    const retornoAnterior = retorno.dataset.retornoElegido || CICLO_RETORNO_INICIAL;
+    retorno.value = ciclosRetorno.includes(retornoAnterior) ? retornoAnterior : CICLO_RETORNO_INICIAL;
+    if(!retorno.value && ciclosRetorno.length) retorno.value = ciclosRetorno[0];
+    retorno.dataset.retornoElegido = retorno.value;
   }
 
   actualizarCiclosRetorno();
+  actualizarVistaPreviaRetorno();
 
   ultimo.addEventListener("change", () => {
     actualizarCiclosRetorno();
+    actualizarVistaPreviaRetorno();
+    ocultarResultadoSiExiste();
+  });
+  retorno.addEventListener("change", () => {
+    retorno.dataset.retornoElegido = retorno.value;
+    actualizarVistaPreviaRetorno();
     ocultarResultadoSiExiste();
   });
 
-  const apellidos = document.getElementById("apellidos");
-  const nombres = document.getElementById("nombres");
+  const nombreCompleto = document.getElementById("nombreCompleto");
   const codigo = document.getElementById("codigo");
-  if(codigo){ codigo.value = obtenerCodigoSesion(); codigo.readOnly = true; codigo.classList.add("bg-gray-100","cursor-not-allowed"); }
-
-  [apellidos,nombres].forEach(input => {
-    input.addEventListener("input", () => {
-      input.value = input.value.toLocaleUpperCase("es-PE");
-      ocultarResultadoSiExiste();
-    });
-  });
-
-  codigo.addEventListener("input", () => {
-    codigo.value = codigo.value.replace(/\D/g,"").slice(0,8);
+  const correo = document.getElementById("correo");
+  if(codigo){
+    codigo.value = obtenerCodigoSesion();
+    codigo.readOnly = true;
+    codigo.classList.add("bg-gray-100","cursor-not-allowed");
+  }
+  if(correo){
+    correo.value = codigo?.value.trim() ? `${codigo.value.trim()}@ue.edu.pe` : "";
+    correo.readOnly = true;
+    correo.classList.add("bg-gray-100","cursor-not-allowed");
+  }
+  nombreCompleto?.addEventListener("input", () => {
+    nombreCompleto.value = nombreCompleto.value.toLocaleUpperCase("es-PE");
     ocultarResultadoSiExiste();
   });
-
-  document.querySelectorAll("#retornoForm input, #retornoForm select").forEach(el => {
+  document.getElementById("detalleMotivoRetorno")?.addEventListener("input", event => {
+    event.target.value = event.target.value.toLocaleUpperCase("es-PE");
+    ocultarResultadoSiExiste();
+  });
+  codigo?.addEventListener("input", () => {
+    codigo.value = codigo.value.replace(/\D/g,"").slice(0,8);
+    if(correo) correo.value = codigo.value ? `${codigo.value}@ue.edu.pe` : "";
+    ocultarResultadoSiExiste();
+  });
+  document.querySelectorAll("#retornoForm input, #retornoForm select, #retornoForm textarea").forEach(el => {
     el.addEventListener("change", ocultarResultadoSiExiste);
   });
+}
+
+function actualizarVistaPreviaRetorno(){
+  const ultimo = document.getElementById("ultimoCiclo")?.value || "";
+  const retorno = document.getElementById("cicloRetorno")?.value || "";
+  const ciclosInput = document.getElementById("ciclosNoEstudiados");
+  const cantidadInput = document.getElementById("numeroCiclosSuspendidos");
+  const descripcion = document.getElementById("descripcionTramiteRetorno");
+  const documentos = document.getElementById("documentoTramiteRetorno");
+  if(!ciclosInput || !cantidadInput || !descripcion || !documentos) return;
+
+  if(!ultimo || !retorno || cicloToIndex(retorno) <= cicloToIndex(ultimo)){
+    ciclosInput.value = "";
+    cantidadInput.value = "";
+    descripcion.innerHTML = '<p class="font-bold text-gray-800">SELECCIONE EL ÚLTIMO CICLO Y EL PERIODO DE RETORNO PARA MOSTRAR LA INFORMACIÓN DEL TRÁMITE QUE CORRESPONDE.</p>';
+    documentos.innerHTML = '<p class="font-bold text-gray-800">EL FORMATO Y LAS DECLARACIONES SE MOSTRARÁN SEGÚN EL TRÁMITE QUE CORRESPONDA.</p>';
+    documentos.dataset.tramiteTipo = "";
+    return;
+  }
+
+  const ciclos = obtenerCiclosIntermedios(ultimo, retorno);
+  const ciclosContabilizables = obtenerCiclosContabilizables(ciclos);
+  const cantidad = ciclosContabilizables.length;
+  const ciclosTexto = ciclos.length ? ciclos.join(" Y ") : "NINGUNO";
+  ciclosInput.value = ciclosTexto;
+  cantidadInput.value = `${cantidad} ${cantidad === 1 ? "CICLO REGULAR" : "CICLOS REGULARES"}`;
+
+  const sinSuspension = cantidad === 0;
+  const esReserva = cantidad >= 1 && cantidad <= 2;
+  const titulo = sinSuspension ? "CONTINUIDAD DE ESTUDIOS" : esReserva ? "RESERVA DE MATRÍCULA" : "REINCORPORACIÓN (SIEMPRE QUE HAYA SUSPENDIDO MÁS DE 2 SEMESTRES)";
+  const descripcionReserva = `
+    <p class="font-extrabold text-base text-gray-900">${titulo}</p>
+    <p>Estimado(a) estudiante:</p>
+    <p>Para solicitar reserva de matrícula deberá tener en cuenta los siguientes puntos:</p>
+    <ol class="list-decimal pl-5 space-y-2">
+      <li>No debe presentar adeudos con la Universidad, a fin de efectuar su matrícula en el ciclo a retornar. De lo contrario, deberá regularizar su situación financiera con el área de Finanzas a través del correo <a class="underline font-semibold text-[var(--esan-red)]" href="mailto:finanzaspregrado@ue.edu.pe">finanzaspregrado@ue.edu.pe</a>.</li>
+      <li>Los estudiantes con el beneficio Beca - Pronabec deberán solicitar reserva de matrícula con la coordinadora del Programa, al correo <a class="underline font-semibold text-[var(--esan-red)]" href="mailto:amadariaga@esan.edu.pe">amadariaga@esan.edu.pe</a>.</li>
+      <li>El costo por concepto de Reserva de Matrícula es de S/ 300.00 y puede solicitarse por uno (1) o dos (2) semestres académicos consecutivos o no consecutivos (Reglamento de Estudios, Art. 35).</li>
+      <li>En caso haya suspendido su matrícula más de 2 ciclos regulares, previamente deberá tener aprobada su solicitud de Reincorporación por las autoridades de la Universidad. De lo contrario, envíe un correo a <a class="underline font-semibold text-[var(--esan-red)]" href="mailto:ssacad@ue.edu.pe">ssacad@ue.edu.pe</a> para que le informen el procedimiento a seguir.</li>
+    </ol>`;
+  const descripcionReincorporacion = `
+    <p class="font-extrabold text-base text-gray-900">${titulo}</p>
+    <p>Estimado(a) estudiante:</p>
+    <p>Reciba un cordial saludo. Antes de solicitar reincorporación, deberá tener en cuenta lo siguiente:</p>
+    <ul class="list-disc pl-5 space-y-2">
+      <li>Debe haber suspendido más de 2 semestres académicos (2 ciclos regulares).</li>
+      <li>No debe presentar adeudos con la Universidad, a fin de efectuar su matrícula en el ciclo a retornar. De lo contrario, deberá regularizar su situación financiera con el área de Finanzas a través del correo <a class="underline font-semibold text-[var(--esan-red)]" href="mailto:finanzaspregrado@ue.edu.pe">finanzaspregrado@ue.edu.pe</a>.</li>
+      <li>El alumno que se reincorpore a la Universidad debe adecuarse al plan de estudios y a las normas vigentes al momento de la reanudación de su matrícula. En caso de reincorporación, no se convalidan asignaturas aprobadas en otras universidades (Reglamento de Estudios, Art. 40).</li>
+    </ul>
+    <p>Teniendo en cuenta lo señalado, deberá enviar su solicitud de reincorporación debidamente firmada a través de este medio, a fin de que sea evaluada por el Vicerrectorado Académico.</p>
+    <p>De ser procedente la solicitud, recibirá la confirmación por correo electrónico.</p>
+    <p>El costo por concepto de Reserva de Matrícula es de S/ 300.00 por un máximo de dos (2) semestres académicos. El monto total a cancelar dependerá de cuántos ciclos regulares dejó de estudiar.</p>`;
+
+  descripcion.innerHTML = sinSuspension
+    ? `<p class="font-extrabold text-base text-gray-900">CONTINUIDAD DE ESTUDIOS</p><p>NO SE IDENTIFICAN CICLOS REGULARES SIN ESTUDIAR ENTRE LOS PERIODOS SELECCIONADOS. VERIFICA TU PERIODO DE MATRÍCULA CON SERVICIOS ACADÉMICOS.</p>`
+    : esReserva ? descripcionReserva : descripcionReincorporacion;
+
+  const tipoDocumento = sinSuspension ? "retorno" : esReserva ? "reserva" : "reincorporacion";
+  if(documentos.dataset.tramiteTipo !== tipoDocumento){
+    if(sinSuspension){
+      documentos.innerHTML = '<p class="font-bold text-gray-800">NO SE REQUIERE FORMATO DE RESERVA NI DE REINCORPORACIÓN PARA LOS CICLOS SELECCIONADOS.</p>';
+      documentos.dataset.tramiteTipo = tipoDocumento;
+      return;
+    }
+    const nombreArchivo = esReserva ? "formato_solicitud_reserva_matricula.docx" : "formato_solicitud_reincorporacion.docx";
+    const textoFormato = esReserva ? "FORMATO DE SOLICITUD DE RESERVA DE MATRÍCULA" : "FORMATO DE SOLICITUD DE REINCORPORACIÓN";
+    const declaraciones = esReserva ? `
+      <label class="flex items-start gap-3 rounded-xl border border-gray-200 p-3 cursor-pointer"><input type="checkbox" id="declaracionReservaDeuda" name="declaracionReservaDeuda" class="declaracionRetorno mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro no tener deuda pendiente con la Universidad.</span></label>
+      <label class="flex items-start gap-3 rounded-xl border border-gray-200 p-3 cursor-pointer"><input type="checkbox" id="declaracionConsentimientoRetorno" name="declaracionConsentimientoRetorno" class="declaracionRetorno mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro que todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.</span></label>` : `
+      <label class="flex items-start gap-3 rounded-xl border border-gray-200 p-3 cursor-pointer"><input type="checkbox" id="declaracionConsentimientoRetorno" name="declaracionConsentimientoRetorno" class="declaracionRetorno mt-1 accent-red-600" required><span class="text-sm text-gray-700">Declaro que todos los datos expresados en este documento constituyen mi consentimiento libre y voluntario.</span></label>`;
+
+    // ARCHIVOS DESCARGABLES PUBLICADOS JUNTO AL HTML: ${'${nombreArchivo}'}; el nombre del archivo se mantiene en el código y no se muestra como instrucción al estudiante.
+    documentos.innerHTML = `
+      <div class="format-upload-card rounded-xl border border-gray-200 p-4 space-y-3">
+        <p class="font-extrabold text-gray-900">DEBERÁ DESCARGAR Y ADJUNTAR EL SIGUIENTE DOCUMENTO:</p>
+        <p><a class="inline-flex items-center gap-2 rounded-xl bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] px-4 py-3 text-white font-bold" href="./${nombreArchivo}" download="${nombreArchivo}"><i data-lucide="download" class="w-4 h-4"></i>DESCARGAR ${textoFormato}</a></p>
+        <label class="field-label" for="formatoTramiteRetorno">ADJUNTAR ${textoFormato} *</label>
+        <input id="formatoTramiteRetorno" name="formatoTramiteRetorno" class="field" type="file" accept=".pdf" required>
+        <p id="err-formatoTramiteRetorno" class="error-text hidden"></p>
+        <p class="helper">FORMATO PERMITIDO: PDF.</p>
+      </div>
+      <div class="pt-3 space-y-3"><p class="font-extrabold text-gray-900">DECLARACIONES OBLIGATORIAS</p>${declaraciones}<p id="err-declaracionesRetorno" class="error-text hidden"></p></div>`;
+    documentos.dataset.tramiteTipo = tipoDocumento;
+    if(window.lucide) window.lucide.createIcons();
+  }
 }
 
 function ocultarResultadoSiExiste(){
@@ -2606,74 +3093,117 @@ function marcarError(id, mensaje){
 
 function validarFormulario(){
   limpiarErrores();
-
+  const form=document.getElementById("retornoForm");
+  const carrera=document.getElementById("carrera");
+  const motivo=document.getElementById("motivoRetorno");
+  const carreraOtro=form?.querySelector('[data-otro-para="carrera"] input')?.value.trim()||"";
+  const motivoOtro=form?.querySelector('[data-otro-para="motivoRetorno"] input')?.value.trim()||"";
   const datos = {
-    apellidos: document.getElementById("apellidos").value.trim(),
-    nombres: document.getElementById("nombres").value.trim(),
+    nombreCompleto: document.getElementById("nombreCompleto").value.trim(),
     codigo: document.getElementById("codigo").value.trim(),
     correo: document.getElementById("correo").value.trim(),
-    carrera: document.getElementById("carrera").value,
+    carrera: carrera.value,
+    otraCarrera: carrera.value === "OTROS" ? carreraOtro : "",
     ultimoCiclo: document.getElementById("ultimoCiclo").value,
     cicloRetorno: document.getElementById("cicloRetorno").value,
+    ciclosNoEstudiados: document.getElementById("ciclosNoEstudiados").value.trim(),
+    numeroCiclosSuspendidos: document.getElementById("numeroCiclosSuspendidos").value.trim(),
+    motivoSolicitud: motivo.value,
+    otroMotivoSolicitud: motivo.value === "OTROS" ? motivoOtro : "",
+    detalleMotivoSolicitud: document.getElementById("detalleMotivoRetorno").value.trim(),
+    formatoTramiteRetorno: document.getElementById("formatoTramiteRetorno")?.files?.[0] || null,
     confirmacion: document.getElementById("confirmacion").checked
   };
-
   let ok = true;
+  const marcarErrorOtro = (input, mensaje) => {
+    if(!input) return;
+    input.classList.add("field-error");
+    let aviso=input.parentElement?.querySelector(".error-text");
+    if(!aviso){
+      aviso=document.createElement("p");
+      aviso.className="error-text";
+      input.insertAdjacentElement("afterend",aviso);
+    }
+    aviso.textContent=mensaje;
+    aviso.classList.remove("hidden");
+  };
 
-  if(datos.apellidos.length < 2){
-    marcarError("apellidos","Ingresa tus apellidos completos.");
+  if(datos.nombreCompleto.length < 3){
+    marcarError("nombreCompleto","INGRESA TUS APELLIDOS Y NOMBRES COMPLETOS.");
     ok = false;
   }
-
-  if(datos.nombres.length < 2){
-    marcarError("nombres","Ingresa tus nombres completos.");
-    ok = false;
-  }
-
   if(!/^\d{8}$/.test(datos.codigo)){
-    marcarError("codigo","El código debe contener exactamente 8 dígitos.");
+    marcarError("codigo","EL CÓDIGO DEBE CONTENER EXACTAMENTE 8 DÍGITOS.");
     ok = false;
   }
-
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.correo)){
-    marcarError("correo","Ingresa un correo electrónico válido.");
+  if(!/^[^\s@]+@ue\.edu\.pe$/i.test(datos.correo)){
+    marcarError("correo","NO SE PUDO GENERAR UN CORREO INSTITUCIONAL VÁLIDO A PARTIR DEL CÓDIGO.");
     ok = false;
   }
-
   if(!datos.carrera){
-    marcarError("carrera","Selecciona tu carrera.");
+    marcarError("carrera","SELECCIONA TU CARRERA ACTUAL.");
     ok = false;
+  } else if(datos.carrera === "OTROS" && !datos.otraCarrera){
+    const input=form.querySelector('[data-otro-para="carrera"] input');
+    marcarErrorOtro(input,"ESPECIFICA TU CARRERA ACTUAL.");
+    ok=false;
   }
-
   if(!datos.ultimoCiclo){
-    marcarError("ultimoCiclo","Selecciona tu último ciclo de estudios.");
+    marcarError("ultimoCiclo","SELECCIONA TU ÚLTIMO CICLO DE ESTUDIOS.");
     ok = false;
   }
-
   if(!datos.cicloRetorno){
-    marcarError("cicloRetorno","Selecciona el ciclo en el que deseas retomar tus estudios.");
+    marcarError("cicloRetorno","SELECCIONA EL CICLO EN EL QUE DESEAS RETOMAR TUS ESTUDIOS.");
     ok = false;
   }
-
   if(datos.ultimoCiclo && datos.cicloRetorno){
     const diff = cicloToIndex(datos.cicloRetorno) - cicloToIndex(datos.ultimoCiclo);
-
     if(diff <= 0){
-      marcarError("cicloRetorno","El ciclo de retorno debe ser posterior a tu último ciclo de estudios.");
+      marcarError("cicloRetorno","EL CICLO DE RETORNO DEBE SER POSTERIOR A TU ÚLTIMO CICLO DE ESTUDIOS.");
       ok = false;
     }
   }
-
+  if(!datos.motivoSolicitud){
+    marcarError("motivoRetorno","SELECCIONA EL MOTIVO DE TU SOLICITUD.");
+    ok = false;
+  } else if(datos.motivoSolicitud === "OTROS" && !datos.otroMotivoSolicitud){
+    const input=form.querySelector('[data-otro-para="motivoRetorno"] input');
+    marcarErrorOtro(input,"ESPECIFICA EL MOTIVO DE TU SOLICITUD.");
+    ok=false;
+  }
+  if(datos.detalleMotivoSolicitud.length < 3){
+    marcarError("detalleMotivoRetorno","EXPLICA BREVEMENTE EL MOTIVO DE TU SOLICITUD.");
+    ok = false;
+  }
+  if(!datos.formatoTramiteRetorno || !/\.pdf$/i.test(datos.formatoTramiteRetorno.name)){
+    const archivo = document.getElementById("formatoTramiteRetorno");
+    const errorArchivo = document.getElementById("err-formatoTramiteRetorno");
+    if(archivo) archivo.classList.add("field-error");
+    if(errorArchivo){ errorArchivo.textContent = !datos.formatoTramiteRetorno ? "ADJUNTA EL FORMATO COMPLETADO DEL TRÁMITE CORRESPONDIENTE EN PDF." : "EL FORMATO DEBE ESTAR EN PDF."; errorArchivo.classList.remove("hidden"); }
+    ok = false;
+  }
+  const declaracionesRetorno = [...document.querySelectorAll("#documentoTramiteRetorno .declaracionRetorno")];
+  if(declaracionesRetorno.some(check => !check.checked)){
+    const errorDeclaraciones = document.getElementById("err-declaracionesRetorno");
+    if(errorDeclaraciones){ errorDeclaraciones.textContent = "DEBES ACEPTAR TODAS LAS DECLARACIONES OBLIGATORIAS."; errorDeclaraciones.classList.remove("hidden"); }
+    ok = false;
+  }
   if(!datos.confirmacion){
     const e = document.getElementById("err-confirmacion");
-    e.textContent = "Debes confirmar que la información ingresada es correcta.";
+    e.textContent = "DEBES CONFIRMAR QUE LA INFORMACIÓN INGRESADA ES CORRECTA.";
     e.classList.remove("hidden");
     ok = false;
   }
-
+  // Revisión común adicional para asegurar que ningún campo obligatorio visible quede incompleto.
+  const erroresComunes=obtenerErroresCamposObligatorios(form);
+  erroresComunes.forEach(error=>{
+    ok=false;
+    if(!error.element.classList.contains("field-error")) marcarErrorComunFormulario(error);
+  });
+  if(datos.formatoTramiteRetorno){ datos.nombreArchivoTramite = datos.formatoTramiteRetorno.name; }
+  delete datos.formatoTramiteRetorno;
   return {ok, datos};
 }
-
 
 /* ============================================================
    RESULTADO DE RESERVA / REINCORPORACIÓN
@@ -2682,37 +3212,39 @@ let ultimoResultado = null;
 let modoTramiteRetorno = "automatico";
 
 function calcularRetorno(){
-  const {ok, datos} = validarFormulario();
-  if(!ok) return;
+  // Antes de calcular, se deben completar TODOS los campos obligatorios,
+  // adjuntar el formato PDF correspondiente y aceptar las declaraciones.
+  const validacion = validarFormulario();
+  if(!validacion.ok){
+    const primerError = document.querySelector("#retornoForm .error-text:not(.hidden), #retornoForm .field-error");
+    primerError?.scrollIntoView({behavior:"smooth", block:"center"});
+    return;
+  }
+  const ultimo = document.getElementById("ultimoCiclo")?.value || "";
+  const retorno = document.getElementById("cicloRetorno")?.value || "";
 
-  const ciclosIntermedios =
-    obtenerCiclosIntermedios(
-      datos.ultimoCiclo,
-      datos.cicloRetorno
-    );
-
-  // Todos los ciclos sin estudiar cuentan para determinar el trámite.
-  const ciclosSuspendidos =
-    ciclosIntermedios.length;
-
-  // Para el monto se excluyen únicamente los ciclos configurados.
-  const ciclosParaPago =
-    obtenerCiclosParaPago(ciclosIntermedios);
-
-  const ciclosExcluidosPago =
-    obtenerCiclosExcluidosPago(ciclosIntermedios);
-
-  const cantidadCiclosParaPago =
-    ciclosParaPago.length;
-
-  const monto =
-    calcularMonto(ciclosParaPago);
-
-  const situacion =
-    determinarSituacion(ciclosSuspendidos);
-
+  const ciclosIntermedios = obtenerCiclosIntermedios(ultimo, retorno);
+  const ciclosContabilizables = obtenerCiclosContabilizables(ciclosIntermedios);
+  const ciclosSuspendidos = ciclosContabilizables.length;
+  const ciclosParaPago = obtenerCiclosParaPago(ciclosIntermedios);
+  const ciclosExcluidosPago = obtenerCiclosExcluidosPago(ciclosIntermedios);
+  const cantidadCiclosParaPago = ciclosParaPago.length;
+  const situacion = determinarSituacion(ciclosSuspendidos);
+  const monto = situacion.tipo === "reserva" ? 300 : calcularMonto(ciclosParaPago);
+  const carreraSelect = document.getElementById("carrera");
+  const motivoSelect = document.getElementById("motivoRetorno");
   ultimoResultado = {
-    ...datos,
+    nombreCompleto: document.getElementById("nombreCompleto")?.value.trim() || "ESTUDIANTE",
+    codigo: document.getElementById("codigo")?.value.trim() || "",
+    correo: document.getElementById("correo")?.value.trim() || "",
+    carrera: carreraSelect?.value || "",
+    otraCarrera: carreraSelect?.value === "OTROS" ? (document.querySelector('[data-otro-para="carrera"] input')?.value.trim() || "") : "",
+    ultimoCiclo: ultimo,
+    cicloRetorno: retorno,
+    ciclosNoEstudiados: ciclosIntermedios.join(" Y "),
+    numeroCiclosSuspendidos: `${ciclosSuspendidos} ${ciclosSuspendidos === 1 ? "CICLO REGULAR" : "CICLOS REGULARES"}`,
+    motivoSolicitud: motivoSelect?.value || "",
+    detalleMotivoSolicitud: document.getElementById("detalleMotivoRetorno")?.value.trim() || "",
     ciclosSuspendidos,
     ciclosIntermedios,
     ciclosParaPago,
@@ -2723,10 +3255,8 @@ function calcularRetorno(){
     tramite: situacion.titulo,
     fechaRegistro: new Date().toISOString()
   };
-
   mostrarResultado(ultimoResultado, situacion);
 }
-
 function cambiarModoRetorno(){
   // Se conserva como función auxiliar por compatibilidad; ya no se requiere
   // que el estudiante seleccione manualmente Reserva o Reincorporación.
@@ -2801,7 +3331,7 @@ function mostrarResultado(datos, situacion){
         Solicitar reincorporación aquí
       </button>
       <p class="text-xs text-gray-500 mt-3">
-        Al enviar la solicitud, la información del trámite y el monto calculado se remitirán al servicio configurado. Revisa el correo registrado.
+        Recibirás la información correspondiente a tu trámite en tu correo institucional.
       </p>
     `
     : `
@@ -2810,10 +3340,10 @@ function mostrarResultado(datos, situacion){
               class="inline-flex justify-center items-center gap-2 px-6 py-3.5 rounded-xl
                      bg-[var(--esan-red)] hover:bg-[var(--esan-red-dark)] text-white font-bold transition shadow-md">
         <i data-lucide="mail" class="w-5 h-5"></i>
-        Enviar información a mi correo
+        Enviar información a mi correo institucional
       </button>
       <p class="text-xs text-gray-500 mt-3">
-        Recibirás en el correo registrado la información correspondiente al resultado calculado.
+        Recibirás en tu correo institucional la información correspondiente al resultado calculado.
       </p>
     `;
 
@@ -2846,8 +3376,7 @@ function mostrarResultado(datos, situacion){
             <p class="text-xs uppercase tracking-[.16em] text-gray-400 font-bold">Monto calculado</p>
             <div class="amount mt-3">${formatoMonto(datos.monto)}</div>
             <p class="text-sm text-gray-500 mt-3 leading-relaxed">
-              Monto obtenido según los ciclos considerados para pago. Los periodos 2020-1, 2020-2,
-              2021-1, 2021-2, 2022-1 y 2022-2 no se consideran para este cálculo económico.
+              ${datos.situacion === "reserva" ? "La Reserva de Matrícula tiene un costo de S/ 300.00 por uno o dos semestres académicos." : datos.situacion === "retorno" ? "No se identifican ciclos suspendidos que deban contabilizarse para determinar el trámite." : "Los periodos 2020-1, 2020-2, 2021-1, 2021-2 y 2022-1 se excluyen tanto del cálculo del monto como del total de ciclos suspendidos."}
             </p>
           </div>
 
@@ -2894,7 +3423,7 @@ function mostrarResultado(datos, situacion){
 
         <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
           <p class="text-sm text-gray-600 leading-relaxed">
-            <strong>${datos.nombres} ${datos.apellidos}</strong>, este resultado es una orientación generada
+            <strong>${datos.nombreCompleto}</strong>, este resultado es una orientación generada
             a partir de los datos ingresados. La procedencia definitiva del trámite está sujeta a la validación
             académica y administrativa correspondiente.
           </p>
@@ -2937,6 +3466,14 @@ async function enviarAlSistema(accion){
   const estado = document.getElementById("estadoEnvio");
   const boton = document.getElementById("btnEnviarResultado");
 
+  if(accion === "solicitud_reincorporacion" || accion === "enviar_resultado"){
+    const validacion = validarFormulario();
+    if(!validacion.ok){
+      const primerError = document.querySelector("#retornoForm .error-text:not(.hidden), #retornoForm .field-error");
+      primerError?.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+  }
   if(!ultimoResultado) return;
 
   if(!APPS_SCRIPT_URL){
@@ -2948,13 +3485,16 @@ async function enviarAlSistema(accion){
 
   const payload = {
     accion,
-    apellidos: ultimoResultado.apellidos,
-    nombres: ultimoResultado.nombres,
+    nombreCompleto: ultimoResultado.nombreCompleto,
     codigo: ultimoResultado.codigo,
     correo: ultimoResultado.correo,
     carrera: ultimoResultado.carrera,
+    otraCarrera: ultimoResultado.otraCarrera,
     ultimoCiclo: ultimoResultado.ultimoCiclo,
     cicloRetorno: ultimoResultado.cicloRetorno,
+    motivoSolicitud: ultimoResultado.motivoSolicitud,
+    otroMotivoSolicitud: ultimoResultado.otroMotivoSolicitud,
+    detalleMotivoSolicitud: ultimoResultado.detalleMotivoSolicitud,
     ciclosSuspendidos: String(ultimoResultado.ciclosSuspendidos),
     ciclosSinEstudiar: ultimoResultado.ciclosIntermedios.join(", "),
     ciclosParaPago: ultimoResultado.ciclosParaPago.join(", "),
@@ -2983,9 +3523,9 @@ async function enviarAlSistema(accion){
     });
 
     if(accion === "solicitud_reincorporacion"){
-      estado.textContent = "Tu solicitud fue enviada. Revisa el correo registrado para recibir la información del trámite.";
+      estado.textContent = "Tu solicitud fue enviada. Revisa tu correo institucional para recibir la información del trámite.";
     }else{
-      estado.textContent = "La información fue enviada. Revisa el correo electrónico registrado.";
+      estado.textContent = "La información fue enviada. Revisa tu correo institucional.";
     }
 
     estado.className = "text-sm font-semibold mt-4 text-green-700";
@@ -3012,6 +3552,9 @@ const loginMobile = document.getElementById("loginMobilePhoto");
 if(loginMobile) loginMobile.style.backgroundImage = `linear-gradient(0deg,rgba(17,24,39,.25),rgba(17,24,39,.05)),url("${IMAGEN_ESAN_DATA_URI}")`;
 document.addEventListener("change", event => {
   if(event.target?.tagName === "SELECT") manejarCampoOtro(event.target);
+});
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape") toggleMenu(false);
 });
 
 renderContent("home");
