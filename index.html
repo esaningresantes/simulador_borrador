@@ -2600,6 +2600,24 @@ function obtenerCiclosIntermedios(ultimo, retorno){
   return lista;
 }
 
+  
+function obtenerCiclosReservaDisponibles(ultimo, retorno){
+  if(
+    !ultimo ||
+    !retorno ||
+    cicloToIndex(retorno) <= cicloToIndex(ultimo)
+  ){
+    return [];
+  }
+
+  // La reserva pagada solo puede registrarse para los dos primeros ciclos
+  // posteriores al último ciclo estudiado, siempre que sean anteriores
+  // al ciclo de retorno. Primero limitamos a esos dos ciclos y después
+  // retiramos los que ya están excluidos automáticamente del conteo y pago.
+  return obtenerCiclosIntermedios(ultimo, retorno)
+    .slice(0, 2)
+    .filter(ciclo => !CICLOS_EXCLUIDOS_DEL_CONTEO_Y_PAGO.includes(ciclo));
+}
 
 /* ============================================================
    LÓGICA DEL MONTO
@@ -2692,9 +2710,9 @@ function actualizarOpcionesCiclosReserva(){
   }
 
   const ciclosIntermedios = obtenerCiclosIntermedios(ultimo, retorno);
-  // Los periodos excluidos por la regla vigente ya se descuentan automáticamente,
-  // por lo que no deben elegirse nuevamente como reservas pagadas.
-  const ciclosDisponibles = obtenerCiclosContabilizables(ciclosIntermedios);
+  // La lista compartida limita la selección a los dos primeros ciclos intermedios
+  // y omite los periodos que ya se excluyen automáticamente del conteo y pago.
+  const ciclosDisponibles = obtenerCiclosReservaDisponibles(ultimo, retorno);
   let seleccionadosPrevios = [...opciones.querySelectorAll("input[name='ciclosReservaPagada']:checked")]
     .map(input => input.value)
     .filter(ciclo => ciclosDisponibles.includes(ciclo));
@@ -2706,10 +2724,10 @@ function actualizarOpcionesCiclosReserva(){
   }
 
   if(!ciclosDisponibles.length){
-    opciones.innerHTML = '<p class="text-sm text-gray-700 sm:col-span-2">No hay ciclos intermedios que debas seleccionar para descontar del cálculo.</p>';
-    mensaje.textContent = ciclosIntermedios.length
-      ? "Los ciclos intermedios de este periodo ya están excluidos del cálculo por la regla vigente."
-      : "No hay ciclos entre el último ciclo estudiado y el ciclo de retorno.";
+    opciones.innerHTML = '<p class="text-sm text-gray-700 sm:col-span-2">No hay ciclos que debas marcar como reserva pagada.</p>';
+    mensaje.textContent = !ciclosIntermedios.length
+      ? "No hay ciclos entre el último ciclo estudiado y el ciclo de retorno."
+      : "Los dos primeros ciclos posteriores al último ciclo estudiado ya están excluidos automáticamente del conteo y pago, por lo que no necesitas seleccionarlos.";
     return;
   }
 
@@ -2720,7 +2738,7 @@ function actualizarOpcionesCiclosReserva(){
     </label>
   `).join("");
   actualizarDisponibilidadCiclosReserva();
-  mensaje.textContent = "Puedes marcar hasta dos ciclos. Si marcas dos, deben ser consecutivos; los ciclos no consecutivos quedarán deshabilitados.";
+  mensaje.textContent = "Solo puedes marcar los dos primeros ciclos posteriores a tu último ciclo estudiado que estén antes del retorno. Los periodos excluidos automáticamente no aparecerán. Si marcas dos, deben ser consecutivos.";
 }
 
 function calcularMonto(ciclosParaPago){
@@ -3130,11 +3148,11 @@ function validarFormulario(){
     ok = false;
   }
   if(datos.tuvoReservaPagada === "SI"){
-    const ciclosIntermediosValidos = datos.ultimoCiclo && datos.cicloRetorno && cicloToIndex(datos.cicloRetorno) > cicloToIndex(datos.ultimoCiclo)
-      ? obtenerCiclosContabilizables(obtenerCiclosIntermedios(datos.ultimoCiclo, datos.cicloRetorno))
+    const ciclosReservaDisponibles = datos.ultimoCiclo && datos.cicloRetorno && cicloToIndex(datos.cicloRetorno) > cicloToIndex(datos.ultimoCiclo)
+      ? obtenerCiclosReservaDisponibles(datos.ultimoCiclo, datos.cicloRetorno)
       : [];
-    if(ciclosIntermediosValidos.length > 0 && datos.ciclosReservaPagada.length === 0){
-      mostrarErrorCiclosReserva("SELECCIONA AL MENOS UN CICLO INTERMEDIO POR EL QUE YA PAGASTE LA RESERVA.");
+    if(ciclosReservaDisponibles.length > 0 && datos.ciclosReservaPagada.length === 0){
+      mostrarErrorCiclosReserva("SELECCIONA AL MENOS UN CICLO DISPONIBLE POR EL QUE YA PAGASTE LA RESERVA.");
       ok = false;
     }
     if(datos.ciclosReservaPagada.length > 2){
@@ -3145,8 +3163,8 @@ function validarFormulario(){
       mostrarErrorCiclosReserva("SI SELECCIONAS DOS CICLOS, DEBEN SER CONSECUTIVOS.");
       ok = false;
     }
-    if(datos.ciclosReservaPagada.some(ciclo => !ciclosIntermediosValidos.includes(ciclo))){
-      mostrarErrorCiclosReserva("SELECCIONA ÚNICAMENTE CICLOS ENTRE TU ÚLTIMO CICLO ESTUDIADO Y TU CICLO DE RETORNO.");
+    if(datos.ciclosReservaPagada.some(ciclo => !ciclosReservaDisponibles.includes(ciclo))){
+      mostrarErrorCiclosReserva("SOLO PUEDES SELECCIONAR LOS DOS PRIMEROS CICLOS POSTERIORES A TU ÚLTIMO CICLO ESTUDIADO, SIEMPRE QUE SEAN ANTERIORES AL RETORNO Y NO ESTÉN EXCLUIDOS AUTOMÁTICAMENTE.");
       ok = false;
     }
   }
