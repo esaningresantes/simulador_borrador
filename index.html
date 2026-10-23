@@ -994,7 +994,7 @@ const db = {
 
                 <div id="bloqueCiclosReserva" class="hidden rounded-xl border border-blue-200 bg-blue-50 p-4 sm:p-5 space-y-3">
                   <label class="field-label">¿EN QUÉ CICLO(S) INTERMEDIO(S) REALIZASTE Y PAGASTE LA RESERVA?</label>
-                  <p class="helper">Puedes seleccionar uno o dos ciclos, consecutivos o no consecutivos. No se mostrarán el último ciclo que estudiaste ni el ciclo al que retornarás.</p>
+                  <p class="helper">Puedes seleccionar uno o dos ciclos. Si seleccionas dos, deben ser consecutivos. No se mostrarán el último ciclo que estudiaste ni el ciclo al que retornarás.</p>
                   <div id="opcionesCiclosReserva" class="grid sm:grid-cols-2 gap-2"></div>
                   <p id="mensajeCiclosReserva" class="helper"></p>
                   <p id="err-ciclosReservaPagada" class="error-text hidden"></p>
@@ -2628,6 +2628,36 @@ function obtenerCiclosReservaPagadaSeleccionados(){
     .map(input => input.value);
 }
 
+function sonCiclosConsecutivos(ciclos){
+  return Array.isArray(ciclos) && ciclos.length === 2 &&
+    Math.abs(cicloToIndex(ciclos[0]) - cicloToIndex(ciclos[1])) === 1;
+}
+
+function actualizarDisponibilidadCiclosReserva(){
+  const opciones = [...document.querySelectorAll("#opcionesCiclosReserva input[name='ciclosReservaPagada']")];
+  const seleccionados = opciones.filter(input => input.checked).map(input => input.value);
+
+  opciones.forEach(input => {
+    let deshabilitado = false;
+    if(seleccionados.length >= 2){
+      // Con dos ciclos seleccionados, no se pueden marcar otros; los elegidos
+      // permanecen habilitados para que se puedan desmarcar.
+      deshabilitado = !input.checked;
+    } else if(seleccionados.length === 1){
+      // Con un ciclo seleccionado, solo se habilita ese ciclo y sus vecinos inmediatos.
+      deshabilitado = !input.checked &&
+        Math.abs(cicloToIndex(input.value) - cicloToIndex(seleccionados[0])) !== 1;
+    }
+    input.disabled = deshabilitado;
+    const etiqueta = input.closest("label");
+    if(etiqueta){
+      etiqueta.classList.toggle("opacity-50", deshabilitado);
+      etiqueta.classList.toggle("cursor-not-allowed", deshabilitado);
+      etiqueta.classList.toggle("cursor-pointer", !deshabilitado);
+    }
+  });
+}
+
 function mostrarErrorCiclosReserva(mensaje){
   const error = document.getElementById("err-ciclosReservaPagada");
   if(!error) return;
@@ -2665,9 +2695,15 @@ function actualizarOpcionesCiclosReserva(){
   // Los periodos excluidos por la regla vigente ya se descuentan automáticamente,
   // por lo que no deben elegirse nuevamente como reservas pagadas.
   const ciclosDisponibles = obtenerCiclosContabilizables(ciclosIntermedios);
-  const seleccionadosPrevios = [...opciones.querySelectorAll("input[name='ciclosReservaPagada']:checked")]
+  let seleccionadosPrevios = [...opciones.querySelectorAll("input[name='ciclosReservaPagada']:checked")]
     .map(input => input.value)
     .filter(ciclo => ciclosDisponibles.includes(ciclo));
+  if(seleccionadosPrevios.length > 2){
+    seleccionadosPrevios = seleccionadosPrevios.slice(0, 2);
+  }
+  if(seleccionadosPrevios.length === 2 && !sonCiclosConsecutivos(seleccionadosPrevios)){
+    seleccionadosPrevios = [seleccionadosPrevios[0]];
+  }
 
   if(!ciclosDisponibles.length){
     opciones.innerHTML = '<p class="text-sm text-gray-700 sm:col-span-2">No hay ciclos intermedios que debas seleccionar para descontar del cálculo.</p>';
@@ -2683,7 +2719,8 @@ function actualizarOpcionesCiclosReserva(){
       <span class="text-sm font-semibold text-gray-800">${ciclo}</span>
     </label>
   `).join("");
-  mensaje.textContent = "Puedes marcar hasta dos ciclos. Las reservas pueden ser consecutivas o no consecutivas; solo se descontarán los ciclos mostrados aquí.";
+  actualizarDisponibilidadCiclosReserva();
+  mensaje.textContent = "Puedes marcar hasta dos ciclos. Si marcas dos, deben ser consecutivos; los ciclos no consecutivos quedarán deshabilitados.";
 }
 
 function calcularMonto(ciclosParaPago){
@@ -2857,9 +2894,13 @@ function prepararFormularioRetorno(){
     if(seleccionados.length > 2){
       event.target.checked = false;
       mostrarErrorCiclosReserva("SOLO PUEDES SELECCIONAR HASTA DOS CICLOS CON RESERVA PAGADA.");
+    } else if(seleccionados.length === 2 && !sonCiclosConsecutivos(seleccionados)){
+      event.target.checked = false;
+      mostrarErrorCiclosReserva("SI SELECCIONAS DOS CICLOS, DEBEN SER CONSECUTIVOS.");
     } else {
       mostrarErrorCiclosReserva("");
     }
+    actualizarDisponibilidadCiclosReserva();
     actualizarVistaPreviaRetorno();
     ocultarResultadoSiExiste();
   });
@@ -3098,6 +3139,10 @@ function validarFormulario(){
     }
     if(datos.ciclosReservaPagada.length > 2){
       mostrarErrorCiclosReserva("SOLO PUEDES SELECCIONAR HASTA DOS CICLOS CON RESERVA PAGADA.");
+      ok = false;
+    }
+    if(datos.ciclosReservaPagada.length === 2 && !sonCiclosConsecutivos(datos.ciclosReservaPagada)){
+      mostrarErrorCiclosReserva("SI SELECCIONAS DOS CICLOS, DEBEN SER CONSECUTIVOS.");
       ok = false;
     }
     if(datos.ciclosReservaPagada.some(ciclo => !ciclosIntermediosValidos.includes(ciclo))){
